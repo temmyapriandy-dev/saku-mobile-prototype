@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07142f" />
+  <title>SAKU — AI Financial Decision Assistant</title>
+  <style>
+    :root{
+      --navy:#07142f;
+      --navy-2:#0f2451;
+      --blue:#1769ff;
+      --blue-2:#4a8cff;
+      --blue-soft:#eaf2ff;
+      --purple:#7347db;
+      --purple-soft:#f0eaff;
+      --green:#0d9b59;
+      --green-soft:#e8f8ef;
+      --orange:#f07b14;
+      --orange-soft:#fff1e3;
+      --red:#e33645;
+      --red-soft:#ffecef;
+      --ink:#10192f;
+      --muted:#68718a;
+      --line:#e8ebf2;
+      --surface:#ffffff;
+      --bg:#f5f7fb;
+      --shadow:0 18px 60px rgba(7,20,47,.16);
+      --shadow-soft:0 8px 30px rgba(19,35,68,.09);
+      --radius:22px;
+      --safe-bottom:env(safe-area-inset-bottom, 0px);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+    button,input,textarea{font:inherit}
+    button{border:0;cursor:pointer}
+    a{color:inherit}
+    .icon{width:20px;height:20px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+    .icon.sm{width:16px;height:16px}.icon.lg{width:26px;height:26px}.icon.xl{width:34px;height:34px}
+
+    .stage{min-height:100vh;display:grid;grid-template-columns:minmax(340px,430px) minmax(360px,560px);gap:34px;align-items:center;justify-content:center;padding:32px;background:
+      radial-gradient(circle at 12% 16%,rgba(23,105,255,.13),transparent 28%),
+      radial-gradient(circle at 90% 80%,rgba(115,71,219,.12),transparent 28%),
+      linear-gradient(150deg,#f7f9fd,#eef3fb 58%,#f8f5ff);
+    }
+    .phone-wrap{display:flex;align-items:center;justify-content:center;position:relative}
+    .phone{width:390px;height:min(844px,calc(100vh - 54px));min-height:690px;background:#050b18;border:9px solid #050b18;border-radius:46px;box-shadow:0 28px 100px rgba(6,17,40,.34);overflow:hidden;position:relative}
+    .phone::before{content:"";position:absolute;z-index:50;top:7px;left:50%;transform:translateX(-50%);width:112px;height:27px;border-radius:20px;background:#050b18}
+    .phone-screen{height:100%;background:var(--bg);border-radius:36px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+    .statusbar{height:32px;flex:0 0 32px;padding:7px 18px 0;display:flex;justify-content:space-between;align-items:flex-start;font-size:11px;font-weight:800;z-index:30;background:transparent;color:var(--ink)}
+    .status-icons{display:flex;gap:5px;align-items:center;font-size:10px}
+    .view{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;position:relative}
+    .view::-webkit-scrollbar{display:none}
+    .bottom-nav{flex:0 0 70px;height:70px;background:rgba(255,255,255,.97);backdrop-filter:blur(18px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:7px 9px calc(8px + var(--safe-bottom));z-index:25}
+    .bottom-nav.hidden{display:none}
+    .nav-item{background:transparent;color:#7b8498;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:9.5px;font-weight:700;border-radius:14px}
+    .nav-item.active{color:var(--blue);background:var(--blue-soft)}
+    .nav-item .icon{width:21px;height:21px}
+
+    .investor-panel{background:rgba(255,255,255,.82);backdrop-filter:blur(28px);border:1px solid rgba(255,255,255,.9);box-shadow:var(--shadow);border-radius:30px;padding:26px;max-height:calc(100vh - 54px);overflow:auto;scrollbar-width:thin}
+    .brand-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+    .brand-mark{width:48px;height:48px;border-radius:17px;background:linear-gradient(145deg,var(--blue),#643ce0);display:grid;place-items:center;color:#fff;box-shadow:0 10px 24px rgba(23,105,255,.3)}
+    .brand-name{font-size:26px;line-height:1;font-weight:900;letter-spacing:-.7px;color:var(--navy)}
+    .brand-sub{font-size:11px;color:var(--muted);font-weight:700;margin-top:5px;letter-spacing:.3px}
+    .pitch{font-size:15px;line-height:1.55;color:#32405d;margin:16px 0 18px}
+    .pitch strong{color:var(--navy)}
+    .panel-section{margin-top:20px}
+    .panel-title{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;font-weight:900;color:#778099;margin-bottom:10px}
+    .story-list{display:grid;gap:8px}
+    .story-btn{width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 13px;display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;transition:.2s;color:var(--ink)}
+    .story-btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-soft)}
+    .story-btn.active{border-color:#9cbbff;background:linear-gradient(100deg,#edf4ff,#f8f4ff)}
+    .story-number{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:var(--blue-soft);color:var(--blue);font-weight:900;font-size:12px}
+    .story-btn:nth-child(2) .story-number{background:var(--purple-soft);color:var(--purple)}
+    .story-btn:nth-child(3) .story-number{background:var(--green-soft);color:var(--green)}
+    .story-btn:nth-child(4) .story-number{background:var(--orange-soft);color:var(--orange)}
+    .story-btn:nth-child(5) .story-number{background:var(--orange-soft);color:var(--orange)}
+    .story-btn:nth-child(6) .story-number{background:var(--red-soft);color:var(--red)}
+    .story-copy b{display:block;font-size:12px}.story-copy span{display:block;color:var(--muted);font-size:10.5px;margin-top:2px;line-height:1.35}
+    .story-arrow{color:#a0a8b8}
+    .metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+    .metric{padding:13px;border-radius:16px;background:#fff;border:1px solid var(--line)}
+    .metric strong{font-size:18px;color:var(--navy);display:block}.metric span{font-size:10px;color:var(--muted);line-height:1.3;display:block;margin-top:3px}
+    .metric small{font-size:8.5px;color:var(--orange);font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+    .principle{margin-top:10px;border-radius:17px;padding:14px;background:var(--navy);color:#fff;font-size:11px;line-height:1.5}
+    .principle b{color:#7db0ff}
+    .panel-actions{display:flex;gap:8px;margin-top:16px}
+    .panel-actions button{flex:1;border-radius:13px;padding:10px 11px;font-size:10.5px;font-weight:800;background:#edf1f8;color:var(--navy)}
+    .panel-actions button.primary{background:var(--navy);color:#fff}
+
+    /* shared mobile components */
+    .screen{min-height:100%;padding:0 18px 24px}
+    .screen.full{padding:0;min-height:100%}
+    .top-appbar{display:flex;align-items:center;justify-content:space-between;padding:8px 0 14px;position:sticky;top:0;z-index:10;background:linear-gradient(var(--bg) 80%,rgba(245,247,251,0))}
+    .back-btn,.icon-btn{width:38px;height:38px;border-radius:13px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;color:var(--ink);box-shadow:0 4px 14px rgba(15,28,55,.05)}
+    .top-title{font-weight:900;font-size:14px}.top-subtitle{font-size:10px;color:var(--muted);margin-top:2px}
+    .page-title{font-size:26px;line-height:1.1;letter-spacing:-.7px;margin:8px 0 7px;font-weight:900;color:var(--navy)}
+    .page-sub{font-size:12px;line-height:1.55;color:var(--muted);margin:0 0 18px}
+    .eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:900;color:var(--blue);background:var(--blue-soft);border-radius:99px;padding:6px 9px}
+    .card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:15px;box-shadow:0 6px 22px rgba(22,38,72,.05)}
+    .card + .card{margin-top:11px}
+    .section-title{display:flex;justify-content:space-between;align-items:center;margin:20px 1px 10px}
+    .section-title b{font-size:13px;color:var(--navy)}.section-title button,.text-link{font-size:10.5px;font-weight:800;color:var(--blue);background:transparent;padding:0}
+    .text-link:disabled{color:#9ca6ba;cursor:not-allowed;text-decoration:none;opacity:.75}
+    .btn{width:100%;min-height:48px;border-radius:15px;padding:13px 16px;font-size:12.5px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s}
+    .btn:active{transform:scale(.985)}
+    .btn.primary{background:linear-gradient(135deg,var(--blue),#4f62ef);color:#fff;box-shadow:0 10px 22px rgba(23,105,255,.25)}
+    .btn.navy{background:var(--navy);color:#fff}.btn.secondary{background:var(--blue-soft);color:var(--blue)}.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+    .btn.success{background:linear-gradient(135deg,var(--green),#22b970);color:#fff}.btn.sm{min-height:38px;padding:9px 12px;font-size:10.5px;border-radius:12px;width:auto}
+    .btn-row{display:flex;gap:8px}.btn-row .btn{flex:1}
+    .input-wrap{margin:12px 0}.input-label{font-size:10.5px;color:#4c5871;font-weight:800;margin-bottom:6px;display:flex;justify-content:space-between}
+    .input{width:100%;border:1.5px solid var(--line);background:#fff;border-radius:15px;padding:13px 14px;outline:none;color:var(--ink);font-size:13px}.input:focus{border-color:#78a7ff;box-shadow:0 0 0 4px rgba(23,105,255,.08)}
+    .input-row{display:flex;gap:8px}.input-row .input-wrap{flex:1}
+    .helper{font-size:9.5px;color:var(--muted);line-height:1.45}
+    .chip-row{display:flex;flex-wrap:wrap;gap:7px}.chip{padding:8px 10px;border-radius:99px;background:#fff;border:1px solid var(--line);font-size:10px;font-weight:800;color:#3b4762}.chip.active{background:var(--blue-soft);border-color:#b7ceff;color:var(--blue)}
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:99px;font-size:8.5px;font-weight:900}.badge.green{background:var(--green-soft);color:var(--green)}.badge.blue{background:var(--blue-soft);color:var(--blue)}.badge.orange{background:var(--orange-soft);color:var(--orange)}.badge.red{background:var(--red-soft);color:var(--red)}.badge.purple{background:var(--purple-soft);color:var(--purple)}
+    .divider{height:1px;background:var(--line);margin:14px 0}
+    .row{display:flex;align-items:center;gap:11px}.row.between{justify-content:space-between}.grow{flex:1;min-width:0}
+    .avatar{width:42px;height:42px;border-radius:15px;background:linear-gradient(145deg,#cbe0ff,#ede3ff);display:grid;place-items:center;font-weight:900;color:var(--blue)}
+    .logo-mini{width:42px;height:42px;border-radius:15px;background:linear-gradient(145deg,var(--blue),var(--purple));color:#fff;display:grid;place-items:center;box-shadow:0 9px 20px rgba(50,90,220,.25)}
+    .logo-mini svg{width:25px;height:25px}
+    .empty-space{height:14px}
+    .empty-state{padding:25px 18px;text-align:center;background:#fff;border:1px dashed #cfd8e8;border-radius:22px}
+    .empty-state .empty-icon{width:62px;height:62px;border-radius:21px;margin:0 auto 13px;display:grid;place-items:center;background:linear-gradient(145deg,var(--blue-soft),var(--purple-soft));color:var(--blue)}
+    .empty-state h3{font-size:15px;color:var(--navy);margin:0 0 6px}.empty-state p{font-size:9.5px;line-height:1.5;color:var(--muted);margin:0 auto 14px;max-width:260px}
+    .sticky-actions{position:sticky;bottom:0;padding:12px 0 3px;background:linear-gradient(transparent,#f5f7fb 22%,#f5f7fb)}
+    .progress{height:7px;background:#eef1f6;border-radius:99px;overflow:hidden}.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--purple));border-radius:inherit}
+    .skeleton{background:linear-gradient(90deg,#eff2f6,#f8f9fb,#eff2f6);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:10px}@keyframes shimmer{to{background-position:-200% 0}}
+    .toast{position:absolute;left:16px;right:16px;bottom:84px;z-index:80;background:rgba(7,20,47,.94);color:#fff;border-radius:15px;padding:12px 14px;font-size:11px;line-height:1.4;display:flex;gap:9px;align-items:center;box-shadow:0 15px 40px rgba(7,20,47,.24);animation:toastIn .25s ease}
+    @keyframes toastIn{from{transform:translateY(18px);opacity:0}}
+
+    /* splash */
+    .splash{min-height:100%;padding:26px 20px 22px;background:
+      radial-gradient(circle at 80% 13%,rgba(109,96,255,.55),transparent 29%),
+      radial-gradient(circle at 17% 68%,rgba(20,139,255,.35),transparent 36%),
+      linear-gradient(155deg,#07142f 5%,#112d68 58%,#30256f);color:#fff;display:flex;flex-direction:column;overflow:hidden;position:relative}
+    .splash::after{content:"";position:absolute;width:240px;height:240px;border:1px solid rgba(255,255,255,.13);border-radius:50%;right:-110px;top:180px;box-shadow:0 0 0 35px rgba(255,255,255,.04),0 0 0 70px rgba(255,255,255,.025)}
+    .splash-logo{display:flex;align-items:center;gap:11px;font-size:19px;font-weight:900;letter-spacing:-.4px;position:relative;z-index:2}.splash-logo .brand-mark{width:40px;height:40px;border-radius:14px;box-shadow:none}
+    .hero-visual{height:275px;display:grid;place-items:center;position:relative;z-index:2;margin:2px 0 2px}
+    .orb{position:absolute;width:214px;height:214px;border-radius:50%;background:linear-gradient(145deg,rgba(255,255,255,.19),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.24);box-shadow:inset 0 0 45px rgba(255,255,255,.08),0 30px 60px rgba(0,0,0,.18)}
+    .hero-phone{position:relative;width:170px;height:240px;border-radius:30px;background:#fff;transform:rotate(-5deg);box-shadow:0 24px 45px rgba(0,0,0,.28);padding:13px;color:var(--ink)}
+    .hero-phone::before{content:"";display:block;width:58px;height:7px;border-radius:20px;background:#d9dfeb;margin:0 auto 14px}
+    .hero-card{border-radius:16px;padding:12px;background:linear-gradient(145deg,#edf5ff,#f4efff);margin-bottom:9px}.hero-card small{font-size:7.5px;color:var(--muted);font-weight:800;text-transform:uppercase}.hero-card b{display:block;font-size:11px;margin-top:4px;color:var(--navy)}
+    .hero-result{border-radius:14px;padding:11px;background:var(--navy);color:#fff}.hero-result small{font-size:7px;color:#9dbaff}.hero-result strong{display:block;font-size:13px;margin:4px 0}.hero-result span{font-size:8px;color:#7ee0a9}
+    .splash-copy{position:relative;z-index:2}.splash-copy h1{font-size:34px;line-height:1.03;letter-spacing:-1.2px;margin:0 0 12px}.splash-copy p{font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.76);margin:0 0 20px}
+    .splash .btn.primary{background:#fff;color:var(--navy);box-shadow:none}.splash .btn.ghost{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.24);color:#fff;margin-top:9px}
+    .microproof{display:flex;gap:12px;margin-top:16px;font-size:9px;color:rgba(255,255,255,.72);position:relative;z-index:2}.microproof span{display:flex;align-items:center;gap:4px}
+
+    /* demo */
+    .demo-head{background:linear-gradient(145deg,#07142f,#19376f);color:#fff;margin:0 -18px;padding:15px 18px 24px;border-radius:0 0 28px 28px}
+    .demo-banner{display:flex;justify-content:space-between;align-items:center;font-size:9px;font-weight:800;color:#a9c3ff}.demo-banner .badge{background:rgba(255,255,255,.12);color:#fff}
+    .demo-head h2{font-size:25px;line-height:1.12;margin:18px 0 7px;letter-spacing:-.6px}.demo-head p{font-size:11px;color:#b8c9ed;line-height:1.45;margin:0}
+    .scenario-card{margin-top:-12px;position:relative;z-index:2}.scenario-top{display:flex;justify-content:space-between;align-items:start}.merchant-logo{width:48px;height:48px;border-radius:16px;background:linear-gradient(145deg,#ff784f,#e73e3e);display:grid;place-items:center;color:#fff;font-size:23px;box-shadow:0 10px 22px rgba(228,65,65,.22)}
+    .recommend-hero{border-radius:20px;margin-top:12px;padding:15px;background:linear-gradient(145deg,#eaf3ff,#f4eeff);border:1px solid #d5e2ff}.recommend-hero .winner{font-size:17px;font-weight:900;color:var(--navy);margin:5px 0}.save-amount{font-size:26px;font-weight:900;color:var(--green);letter-spacing:-.8px}.benefit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}.benefit{background:#fff;border-radius:13px;padding:9px;text-align:center;border:1px solid rgba(60,91,154,.1)}.benefit b{display:block;font-size:10px}.benefit span{font-size:8px;color:var(--muted)}
+
+    /* onboarding */
+    .otp{display:flex;gap:7px;justify-content:center;margin:24px 0}.otp input{width:40px;height:50px;border-radius:13px;border:1.5px solid var(--line);text-align:center;font-size:19px;font-weight:900;outline:none;background:#fff}.otp input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(23,105,255,.08)}
+    .pin-dots{display:flex;justify-content:center;gap:14px;margin:32px 0}.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid #c9cfdb}.pin-dot.filled{background:var(--blue);border-color:var(--blue)}
+    .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:6px auto;max-width:250px}.numkey{height:52px;border-radius:16px;background:#fff;border:1px solid var(--line);font-size:18px;font-weight:800;color:var(--navy)}
+
+    /* trust */
+    .trust-hero{text-align:center;padding:5px 12px 11px}.trust-shield{width:82px;height:82px;border-radius:28px;margin:8px auto 15px;background:linear-gradient(145deg,#e6f8ef,#c9f0da);display:grid;place-items:center;color:var(--green);box-shadow:0 14px 30px rgba(13,155,89,.14)}
+    .trust-list{display:grid;gap:9px}.trust-item{display:flex;gap:11px;align-items:flex-start;padding:12px;border:1px solid var(--line);background:#fff;border-radius:16px}.trust-item .ti-icon{width:34px;height:34px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;flex:0 0 auto}.trust-item b{font-size:11.5px;display:block}.trust-item p{font-size:9.5px;color:var(--muted);line-height:1.4;margin:3px 0 0}
+    .consent-note{background:#fff8e9;border:1px solid #ffe2a8;border-radius:15px;padding:11px;font-size:9.5px;line-height:1.45;color:#6b5423;margin:11px 0}
+
+    /* linked account */
+    .source-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.source{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:14px;display:flex;align-items:center;gap:10px;text-align:left}.source.selected{border-color:#77a7ff;background:var(--blue-soft)}.source .source-logo{width:38px;height:38px;flex:0 0 38px;border-radius:13px;display:grid;place-items:center;font-size:12px;font-weight:900;line-height:1;color:#fff;margin:0}.source b{font-size:11px}.source>span:not(.source-logo){display:block;min-width:0}.source>span:not(.source-logo)>span{display:block;font-size:8.5px;color:var(--muted);margin-top:2px}
+    .sync-loader{text-align:center;padding:44px 12px}.spinner{width:60px;height:60px;border-radius:50%;border:5px solid #dfe9ff;border-top-color:var(--blue);margin:0 auto 18px;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+    .sync-steps{margin-top:22px;text-align:left}.sync-step{display:flex;gap:9px;align-items:center;font-size:10.5px;color:var(--muted);padding:7px 0}.sync-step.done{color:var(--green)}
+
+    /* home */
+    .home-head{padding:6px 0 15px}.greeting{font-size:11px;color:var(--muted)}.greeting-name{font-size:23px;font-weight:900;color:var(--navy);letter-spacing:-.5px}
+    .balance-card{background:linear-gradient(145deg,#07142f,#173a78);color:#fff;border-radius:24px;padding:17px;box-shadow:0 14px 30px rgba(7,20,47,.18);position:relative;overflow:hidden}.balance-card::after{content:"";position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.07);right:-75px;top:-80px}.balance-label{font-size:9px;color:#a8bce5;text-transform:uppercase;letter-spacing:.7px;font-weight:800}.balance{font-size:29px;font-weight:900;letter-spacing:-1px;margin:5px 0 13px}.balance-metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}.balance-mini{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px}.balance-mini span{display:block;font-size:8px;color:#b3c5e7}.balance-mini b{display:block;font-size:11px;margin-top:3px}
+    .advisor-cta{margin-top:12px;background:linear-gradient(125deg,#f1f6ff,#f6f0ff);border:1px solid #d9e5ff;border-radius:22px;padding:15px;display:grid;grid-template-columns:1fr 78px;gap:7px;align-items:center;overflow:hidden}.advisor-cta h3{font-size:15px;margin:0 0 5px;color:var(--navy)}.advisor-cta p{font-size:9.5px;color:var(--muted);line-height:1.4;margin:0 0 11px}.advisor-art{width:74px;height:74px;border-radius:24px;background:linear-gradient(145deg,var(--blue),var(--purple));color:#fff;display:grid;place-items:center;transform:rotate(5deg);box-shadow:0 13px 27px rgba(73,78,221,.24)}
+    .quick-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.quick{background:#fff;border:1px solid var(--line);border-radius:17px;padding:12px 8px;text-align:center;color:var(--navy)}.quick .qicon{width:34px;height:34px;border-radius:12px;margin:0 auto 7px;display:grid;place-items:center}.quick b{font-size:9.5px;display:block;line-height:1.2}.quick span{font-size:7.8px;color:var(--muted)}
+    .insight-strip{display:flex;gap:11px;align-items:start}.insight-icon{width:42px;height:42px;border-radius:15px;background:var(--orange-soft);color:var(--orange);display:grid;place-items:center;flex:0 0 auto}.insight-strip b{font-size:11.5px}.insight-strip p{font-size:9.5px;color:var(--muted);line-height:1.45;margin:4px 0 0}
+    .account-stack{display:flex}.account-pill{width:34px;height:34px;border-radius:12px;border:3px solid #fff;margin-left:-7px;display:grid;place-items:center;color:#fff;font-size:10px;font-weight:900}.account-pill:first-child{margin-left:0}
+
+    /* chat */
+    .chat-screen{min-height:100%;display:flex;flex-direction:column;background:linear-gradient(180deg,#f5f7fb,#eef3fb)}
+    .chat-head{padding:6px 18px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.92);position:sticky;top:0;z-index:5}.chat-head .grow b{font-size:13px}.online{font-size:9px;color:var(--green);font-weight:700}
+    .chat-body{flex:1;padding:17px 18px 115px;overflow-y:auto}.message{max-width:84%;border-radius:18px;padding:11px 13px;font-size:11px;line-height:1.5;margin-bottom:9px;box-shadow:0 4px 16px rgba(24,39,72,.05)}.message.ai{background:#fff;border-top-left-radius:6px}.message.user{background:linear-gradient(135deg,var(--blue),#5667ef);color:#fff;margin-left:auto;border-top-right-radius:6px}.message small{display:block;font-size:7.5px;opacity:.62;margin-top:5px}.chat-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:13px;margin:3px 0 11px}.chat-card b{font-size:11px}.chat-card p{font-size:9.5px;color:var(--muted);line-height:1.4}
+    .chat-composer{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);backdrop-filter:blur(18px);border-top:1px solid var(--line);padding:10px 12px calc(12px + var(--safe-bottom));z-index:9}.chat-chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:8px;scrollbar-width:none}.chat-chips::-webkit-scrollbar{display:none}.chat-chip{flex:0 0 auto;padding:7px 9px;border-radius:99px;background:var(--blue-soft);color:var(--blue);font-size:9px;font-weight:800}.composer-row{display:flex;gap:7px}.composer-input{flex:1;border:1px solid var(--line);border-radius:15px;padding:11px 12px;background:#f7f8fb;outline:none;font-size:11px}.send-btn{width:42px;height:42px;border-radius:14px;background:var(--blue);color:#fff;display:grid;place-items:center}
+
+    /* payment advisor */
+    .advisor-title-card{background:linear-gradient(145deg,#07142f,#1c3875);color:#fff;border-radius:23px;padding:16px;position:relative;overflow:hidden}.advisor-title-card::after{content:"%";position:absolute;right:-4px;bottom:-31px;font-size:105px;font-weight:900;color:rgba(255,255,255,.06)}.advisor-title-card small{font-size:8px;color:#a8bde8;font-weight:800;letter-spacing:.7px}.advisor-title-card h2{font-size:21px;margin:6px 0 5px;letter-spacing:-.5px}.advisor-title-card p{font-size:9.5px;color:#bfd0ef;line-height:1.4;margin:0}
+    .merchant-select{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}.merchant-select::-webkit-scrollbar{display:none}.merchant-chip{flex:0 0 74px;border:1.5px solid var(--line);background:#fff;border-radius:17px;padding:10px 8px;text-align:center}.merchant-chip.selected{border-color:var(--blue);background:var(--blue-soft)}.merchant-chip .micon{width:36px;height:36px;border-radius:12px;margin:0 auto 7px;display:grid;place-items:center;color:#fff;font-size:17px}.merchant-chip b{display:block;font-size:9px}
+    .amount-input{display:flex;align-items:center;background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:4px 13px}.amount-input span{font-weight:900;color:var(--navy)}.amount-input input{border:0;outline:0;padding:13px 8px;min-width:0;width:100%;font-size:20px;font-weight:900;color:var(--navy);background:transparent}
+    .factor-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}.factor-row:last-child{border:0}.factor-icon{width:32px;height:32px;border-radius:12px;display:grid;place-items:center}.factor-row b{font-size:10px}.factor-row span{font-size:8.5px;color:var(--muted);display:block;margin-top:2px}
+    .loading-reco{text-align:center;padding:35px 10px}.ai-orb{width:82px;height:82px;border-radius:28px;background:linear-gradient(145deg,var(--blue),var(--purple));margin:0 auto 18px;display:grid;place-items:center;color:#fff;box-shadow:0 16px 36px rgba(73,81,223,.24);animation:pulse 1.4s ease-in-out infinite}@keyframes pulse{50%{transform:scale(1.05);box-shadow:0 20px 50px rgba(73,81,223,.36)}}
+    .engine-steps{display:grid;gap:8px;text-align:left;margin-top:20px}.engine-step{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;font-size:9.5px;color:var(--muted)}.engine-step.done{color:var(--green)}
+
+    /* results */
+    .result-hero{background:linear-gradient(145deg,#e8f8ef,#f4fff8);border:1px solid #c7efd9;border-radius:24px;padding:16px}.result-label{font-size:8.5px;color:var(--green);font-weight:900;text-transform:uppercase;letter-spacing:.8px}.result-method{display:flex;align-items:center;gap:12px;margin:11px 0}.payment-logo{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;color:#fff;font-weight:900;box-shadow:0 10px 22px rgba(24,42,82,.14)}.result-method h2{font-size:20px;margin:0 0 3px}.result-method p{font-size:9px;color:var(--muted);margin:0}.result-saving{display:flex;justify-content:space-between;align-items:end;padding-top:12px;border-top:1px dashed #abdabc}.result-saving span{font-size:9px;color:var(--muted)}.result-saving strong{font-size:28px;color:var(--green);letter-spacing:-.8px}.confidence{display:flex;align-items:center;gap:8px;margin-top:9px}.confidence .progress{flex:1;height:6px}.confidence small{font-size:8px;font-weight:900;color:var(--green)}
+    .method-list{display:grid;gap:9px}.method{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:center}.method.winner{border-color:#a9d9bd}.method .payment-logo{width:42px;height:42px;border-radius:14px}.method b{font-size:10.5px}.method p{font-size:8.5px;color:var(--muted);margin:3px 0}.method-save{text-align:right}.method-save b{color:var(--green)}.method-save span{display:block;font-size:7.5px;color:var(--muted)}
+    .transparent-box{background:#f8f5ff;border:1px solid #e0d8ff;border-radius:16px;padding:11px;font-size:9px;line-height:1.45;color:#554973}.transparent-box b{color:var(--purple)}
+    .term-list{display:grid;gap:8px}.term{display:flex;justify-content:space-between;gap:12px;font-size:9.5px;padding:8px 0;border-bottom:1px solid var(--line)}.term:last-child{border:0}.term span{color:var(--muted)}.term b{text-align:right}
+    .score-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.score-card{background:#f7f9fc;border-radius:15px;padding:11px}.score-card span{font-size:8px;color:var(--muted)}.score-card b{display:block;font-size:14px;margin-top:3px}
+
+    /* transaction success */
+    .success-screen{min-height:100%;background:linear-gradient(165deg,#eafaf1,#f8fffb 55%,#edf4ff);padding:28px 18px;display:flex;flex-direction:column;text-align:center}.success-check{width:88px;height:88px;border-radius:31px;background:linear-gradient(145deg,var(--green),#2bc477);color:#fff;display:grid;place-items:center;margin:22px auto 17px;box-shadow:0 18px 36px rgba(13,155,89,.25)}.success-screen h1{font-size:27px;margin:0 0 7px;color:var(--navy);letter-spacing:-.7px}.success-screen>p{font-size:11px;line-height:1.5;color:var(--muted);margin:0 15px 18px}.receipt{background:#fff;border:1px solid #dbeee4;border-radius:22px;padding:15px;text-align:left;box-shadow:var(--shadow-soft)}.receipt-row{display:flex;justify-content:space-between;font-size:10px;padding:8px 0;border-bottom:1px dashed var(--line)}.receipt-row:last-child{border:0}.receipt-row span{color:var(--muted)}.receipt-row strong.green{color:var(--green)}.event-pipeline{margin-top:12px;background:var(--navy);color:#fff;border-radius:18px;padding:13px;text-align:left}.event-pipeline small{font-size:8px;color:#9db2db;text-transform:uppercase;font-weight:800}.event-flow{display:flex;align-items:center;gap:6px;margin-top:9px}.event{flex:1;text-align:center;background:rgba(255,255,255,.08);border-radius:10px;padding:7px 4px;font-size:8px}.event.done{color:#82ebb3}.event-arrow{color:#7d91b7;font-size:9px}
+
+    /* affordability */
+    .afford-hero{background:linear-gradient(145deg,#fff4e5,#fff9f1);border:1px solid #ffe0b6;border-radius:22px;padding:15px}.afford-hero h2{font-size:20px;margin:5px 0}.afford-hero p{font-size:9.5px;color:var(--muted);line-height:1.45;margin:0}.purchase-icon{width:47px;height:47px;border-radius:16px;background:var(--orange);color:#fff;display:grid;place-items:center}
+    .afford-result{border-radius:24px;padding:17px;background:linear-gradient(145deg,#e8f8ef,#f8fffb);border:1px solid #c9ecd9}.afford-status{display:flex;align-items:center;gap:11px}.status-icon{width:51px;height:51px;border-radius:17px;background:var(--green);color:#fff;display:grid;place-items:center}.afford-status h2{font-size:19px;margin:0 0 4px}.afford-status p{font-size:9px;color:var(--muted);margin:0}.impact-chart{height:102px;display:flex;align-items:end;gap:7px;padding-top:15px}.bar{flex:1;border-radius:8px 8px 4px 4px;background:#dfe8f6;min-height:15px;position:relative}.bar.current{background:linear-gradient(var(--blue),#78a7ff)}.bar.after{background:linear-gradient(var(--orange),#ffbd78)}.bar span{position:absolute;top:-16px;left:0;right:0;text-align:center;font-size:7px;color:var(--muted)}
+    .recommendation-note{display:flex;gap:10px;align-items:start;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px}.recommendation-note .ri{width:35px;height:35px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;flex:0 0 auto}.recommendation-note b{font-size:10.5px}.recommendation-note p{font-size:9px;color:var(--muted);line-height:1.45;margin:4px 0 0}
+
+    /* insights */
+    .health-score{background:linear-gradient(145deg,#07142f,#1b3e7d);color:#fff;border-radius:24px;padding:17px;display:grid;grid-template-columns:1fr 105px;gap:12px;align-items:center}.health-score h2{font-size:20px;margin:4px 0}.health-score p{font-size:9px;color:#b7c8e7;line-height:1.4;margin:0}.score-ring{width:92px;height:92px;border-radius:50%;background:conic-gradient(#46d58c 0 76%,rgba(255,255,255,.12) 76%);display:grid;place-items:center;position:relative}.score-ring::before{content:"";position:absolute;width:72px;height:72px;border-radius:50%;background:#132d5c}.score-ring strong{position:relative;font-size:24px}.score-ring span{position:absolute;bottom:19px;font-size:7px;color:#a9bbdd}
+    .category-list{display:grid;gap:9px}.category{display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center}.category-icon{width:38px;height:38px;border-radius:13px;display:grid;place-items:center}.category b{font-size:10.5px}.category p{font-size:8.5px;color:var(--muted);margin:3px 0}.category-amount{text-align:right}.category-amount b{display:block}.category-amount span{font-size:8px;color:var(--red)}
+    .trend-chart{height:120px;display:flex;align-items:end;gap:8px;padding:12px 5px 0}.trend-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}.trend-bar{width:100%;border-radius:7px 7px 3px 3px;background:linear-gradient(#74a4ff,#d5e3ff);min-height:15px}.trend-col.active .trend-bar{background:linear-gradient(var(--blue),#72a3ff)}.trend-col span{font-size:7px;color:var(--muted)}
+
+    /* rewards */
+    .reward-hero{background:linear-gradient(145deg,#322066,#7444db);color:#fff;border-radius:25px;padding:17px;position:relative;overflow:hidden}.reward-hero::after{content:"★";position:absolute;right:-3px;bottom:-35px;font-size:126px;color:rgba(255,255,255,.07)}.reward-hero small{font-size:8px;color:#d6c9ff;font-weight:800}.points{font-size:31px;font-weight:900;letter-spacing:-1px;margin:4px 0}.reward-hero p{font-size:9px;color:#d9cefb;margin:0}.reward-progress{height:7px;border-radius:99px;background:rgba(255,255,255,.15);margin-top:13px;overflow:hidden}.reward-progress span{display:block;width:68%;height:100%;background:#fff;border-radius:99px}
+    .voucher-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.voucher{background:#fff;border:1px solid var(--line);border-radius:18px;padding:13px}.voucher-logo{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;color:#fff;margin-bottom:9px}.voucher b{font-size:10.5px}.voucher p{font-size:8.5px;color:var(--muted);margin:4px 0 10px}.voucher button{font-size:8.5px;background:var(--blue-soft);color:var(--blue);border-radius:9px;padding:7px 9px;font-weight:900}
+    .referral-card{background:linear-gradient(145deg,#fff6e9,#fff);border:1px solid #ffe1b7;border-radius:21px;padding:15px}.ref-code{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px dashed #f1b665;border-radius:13px;padding:10px 11px;margin:10px 0}.ref-code b{font-size:14px;letter-spacing:1px;color:#85500f}.ref-code button{font-size:8.5px;color:var(--orange);font-weight:900;background:transparent}
+
+    /* profile/consent */
+    .profile-card{text-align:center;padding-top:20px}.profile-avatar{width:76px;height:76px;border-radius:26px;margin:0 auto 10px;background:linear-gradient(145deg,#cbe0ff,#efe5ff);display:grid;place-items:center;color:var(--blue);font-size:24px;font-weight:900}.profile-card h2{font-size:19px;margin:0}.profile-card p{font-size:9.5px;color:var(--muted);margin:5px 0}.menu-list{display:grid;gap:8px}.menu-item{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;align-items:center;gap:11px;text-align:left}.menu-icon{width:36px;height:36px;border-radius:13px;display:grid;place-items:center;background:var(--blue-soft);color:var(--blue)}.menu-item b{font-size:10.5px}.menu-item span{display:block;font-size:8.5px;color:var(--muted);margin-top:2px}.menu-item .chev{margin-left:auto;color:#a0a8b8}
+    .permission{background:#fff;border:1px solid var(--line);border-radius:17px;padding:13px;display:flex;gap:10px;align-items:center}.permission .pi{width:38px;height:38px;border-radius:13px;background:var(--green-soft);color:var(--green);display:grid;place-items:center}.permission b{font-size:10.5px}.permission p{font-size:8.5px;color:var(--muted);margin:3px 0 0}.switch{width:42px;height:24px;border-radius:99px;background:#dce1ea;padding:3px;margin-left:auto;transition:.2s}.switch span{display:block;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.15);transition:.2s}.switch.on{background:var(--green)}.switch.on span{transform:translateX(18px)}
+    .audit-item{display:grid;grid-template-columns:9px 1fr;gap:9px}.audit-dot{width:9px;height:9px;border-radius:50%;background:var(--green);margin-top:4px}.audit-item b{font-size:9.5px}.audit-item p{font-size:8.5px;color:var(--muted);margin:2px 0 10px;line-height:1.4}
+
+    /* investor lens bottom sheet */
+    .overlay{position:absolute;inset:0;background:rgba(5,13,29,.48);z-index:100;display:flex;align-items:flex-end;animation:fade .2s ease}@keyframes fade{from{opacity:0}}
+    .sheet{width:100%;max-height:76%;overflow:auto;background:#fff;border-radius:26px 26px 0 0;padding:10px 18px 24px;animation:sheetUp .25s ease}@keyframes sheetUp{from{transform:translateY(30%)}}
+    .sheet-handle{width:42px;height:5px;border-radius:99px;background:#d8dde6;margin:0 auto 15px}.sheet-title{font-size:18px;font-weight:900;color:var(--navy);margin-bottom:7px}.sheet-sub{font-size:10px;color:var(--muted);line-height:1.45}.lens-grid{display:grid;gap:9px;margin-top:13px}.lens-item{border:1px solid var(--line);border-radius:16px;padding:12px}.lens-item small{font-size:8px;text-transform:uppercase;letter-spacing:.7px;color:var(--blue);font-weight:900}.lens-item b{display:block;font-size:11px;margin:4px 0}.lens-item p{font-size:9px;color:var(--muted);line-height:1.4;margin:0}
+
+
+    /* v2 — linked balance dashboard + AI-assisted QR payment */
+    .wallet-head{display:flex;align-items:end;justify-content:space-between;margin:18px 1px 10px}.wallet-head b{font-size:13px;color:var(--navy)}.wallet-head button{background:transparent;color:var(--blue);font-size:10px;font-weight:900}
+    .wallet-strip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:1px 1px 5px;margin:0 -1px;scrollbar-width:none}.wallet-strip::-webkit-scrollbar{display:none}
+    .wallet-card{scroll-snap-align:start;min-width:154px;border-radius:20px;padding:13px;background:#fff;border:1px solid var(--line);box-shadow:0 7px 24px rgba(20,36,59,.055);position:relative;overflow:hidden}
+    .wallet-card::after{content:"";position:absolute;width:74px;height:74px;border-radius:50%;right:-34px;top:-34px;background:var(--wallet-soft,#eef4ff)}
+    .wallet-card.primary-wallet{color:#fff;border:0;background:linear-gradient(145deg,var(--wallet-color,#1769ff),#0b244f)}.wallet-card.primary-wallet::after{background:rgba(255,255,255,.09)}
+    .wallet-top{display:flex;align-items:center;gap:8px;position:relative;z-index:1}.wallet-logo{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:900;background:var(--wallet-color)}
+    .wallet-name{font-size:10px;font-weight:900}.wallet-type{font-size:7.5px;color:var(--muted);margin-top:2px}.primary-wallet .wallet-type{color:rgba(255,255,255,.66)}
+    .wallet-balance{position:relative;z-index:1;font-size:18px;font-weight:900;letter-spacing:-.35px;margin-top:13px}.wallet-caption{position:relative;z-index:1;font-size:8px;color:var(--muted);margin-top:3px}.primary-wallet .wallet-caption{color:rgba(255,255,255,.68)}
+    .wallet-available{position:relative;z-index:1;margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);display:flex;justify-content:space-between;gap:6px;font-size:7.5px;color:var(--muted)}.wallet-available b{font-size:8px;color:var(--green)}.primary-wallet .wallet-available{border-color:rgba(255,255,255,.18);color:rgba(255,255,255,.65)}.primary-wallet .wallet-available b{color:#88f0b8}
+    .scan-pay-card{margin-top:13px;border-radius:24px;padding:15px;background:linear-gradient(135deg,#0f6fff,#6048e6);color:#fff;display:grid;grid-template-columns:1fr 82px;gap:12px;align-items:center;box-shadow:0 14px 32px rgba(42,83,218,.26);position:relative;overflow:hidden}.scan-pay-card::before{content:"";position:absolute;width:160px;height:160px;border-radius:50%;right:-85px;bottom:-95px;background:rgba(255,255,255,.1)}
+    .scan-pay-card small{font-size:8px;text-transform:uppercase;letter-spacing:.8px;color:#cfe0ff;font-weight:900}.scan-pay-card h3{font-size:17px;line-height:1.18;margin:6px 0 5px}.scan-pay-card p{font-size:8.7px;line-height:1.42;color:#d9e5ff;margin:0 0 11px}.scan-pay-art{width:76px;height:76px;border-radius:24px;background:rgba(255,255,255,.14);display:grid;place-items:center;position:relative;z-index:1}.scan-pay-art .icon{width:39px;height:39px}
+    .scan-nav{overflow:visible!important;background:transparent!important}.scan-nav .scan-bubble{width:48px;height:48px;border-radius:17px;background:linear-gradient(145deg,var(--blue),var(--purple));color:#fff;display:grid;place-items:center;margin-top:-22px;box-shadow:0 10px 22px rgba(37,91,226,.34);border:4px solid #fff}.scan-nav.active .scan-bubble{transform:scale(1.04)}.scan-nav span:last-child{margin-top:-2px}
+    .qr-camera{height:385px;border-radius:28px;background:linear-gradient(160deg,#101826,#1d2a3d);position:relative;overflow:hidden;color:#fff;box-shadow:0 16px 42px rgba(6,14,31,.23)}
+    .qr-camera::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 55% 38%,rgba(99,133,172,.24),transparent 33%),linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:auto,24px 24px,24px 24px}
+    .camera-bar{position:absolute;top:13px;left:13px;right:13px;display:flex;justify-content:space-between;align-items:center;z-index:3}.camera-pill{background:rgba(0,0,0,.32);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:99px;padding:7px 10px;font-size:8px;font-weight:800;display:flex;align-items:center;gap:5px}.camera-icon-btn{width:34px;height:34px;border-radius:12px;background:rgba(0,0,0,.3);color:#fff;display:grid;place-items:center;border:1px solid rgba(255,255,255,.13)}
+    .qr-frame{position:absolute;width:226px;height:226px;left:50%;top:49%;transform:translate(-50%,-50%)}.qr-corner{position:absolute;width:46px;height:46px;border-color:#70a5ff;border-style:solid}.qr-corner.tl{left:0;top:0;border-width:4px 0 0 4px;border-radius:14px 0 0 0}.qr-corner.tr{right:0;top:0;border-width:4px 4px 0 0;border-radius:0 14px 0 0}.qr-corner.bl{left:0;bottom:0;border-width:0 0 4px 4px;border-radius:0 0 0 14px}.qr-corner.br{right:0;bottom:0;border-width:0 4px 4px 0;border-radius:0 0 14px 0}.qr-scan-line{position:absolute;left:12px;right:12px;height:2px;top:20px;background:linear-gradient(90deg,transparent,#62a0ff,#8a65ff,transparent);box-shadow:0 0 14px #4e96ff;animation:qrScan 2.2s ease-in-out infinite}@keyframes qrScan{0%,100%{top:20px;opacity:.55}50%{top:202px;opacity:1}}
+    .camera-hint{position:absolute;bottom:18px;left:25px;right:25px;text-align:center;font-size:9px;color:#d4def0;line-height:1.45;z-index:3}.camera-hint b{display:block;color:#fff;font-size:11px;margin-bottom:4px}
+    .scan-scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.scan-scenario{background:#fff;border:1px solid var(--line);border-radius:17px;padding:10px 7px;text-align:center;color:var(--ink)}.scan-scenario .emoji{width:34px;height:34px;border-radius:12px;background:var(--blue-soft);display:grid;place-items:center;margin:0 auto 7px;font-size:17px}.scan-scenario b{display:block;font-size:9px;line-height:1.25}.scan-scenario span{display:block;font-size:7.5px;color:var(--muted);margin-top:3px}
+    .analysis-orbit{width:118px;height:118px;border-radius:50%;margin:28px auto 18px;background:conic-gradient(var(--blue),var(--purple),var(--green),var(--blue));padding:4px;animation:spin 1.8s linear infinite}.analysis-orbit>div{width:100%;height:100%;border-radius:50%;background:var(--bg);display:grid;place-items:center;color:var(--blue);animation:spin 1.8s linear infinite reverse}.analysis-orbit .icon{width:46px;height:46px}.analysis-title{text-align:center}.analysis-title h1{font-size:22px;color:var(--navy);margin:5px 0 7px}.analysis-title p{font-size:10px;line-height:1.5;color:var(--muted);margin:0 12px}.analysis-step{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 11px;margin-top:7px;font-size:9px}.analysis-step .dot{width:24px;height:24px;border-radius:9px;background:var(--green-soft);color:var(--green);display:grid;place-items:center;flex:0 0 auto}.analysis-step.wait .dot{background:var(--blue-soft);color:var(--blue)}
+    .merchant-detected{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:13px}.merchant-detected .merchant-avatar{width:50px;height:50px;border-radius:17px;background:var(--orange-soft);display:grid;place-items:center;font-size:25px}.merchant-detected b{font-size:13px}.merchant-detected p{font-size:8.5px;color:var(--muted);margin:4px 0}.merchant-detected .amount{text-align:right;margin-left:auto}.merchant-detected .amount strong{display:block;font-size:15px}.merchant-detected .amount span{font-size:7.5px;color:var(--green);font-weight:800}
+    .ai-pay-decision{border-radius:24px;padding:16px;background:linear-gradient(145deg,#eaf2ff,#f4edff);border:1px solid #d9d7ff;position:relative;overflow:hidden}.ai-pay-decision::after{content:"✦";position:absolute;right:12px;top:5px;font-size:62px;color:rgba(83,67,210,.08)}.ai-pay-decision small{font-size:8px;color:var(--purple);font-weight:900;text-transform:uppercase;letter-spacing:.7px}.ai-pay-decision h2{font-size:21px;line-height:1.18;margin:7px 0 5px;color:var(--navy)}.ai-pay-decision p{font-size:9.5px;color:#59657e;line-height:1.5;margin:0}.ai-proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}.ai-proof{background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);border-radius:13px;padding:9px}.ai-proof span{display:block;font-size:7px;color:var(--muted)}.ai-proof b{display:block;font-size:10px;margin-top:3px}
+    .wallet-rank-list{display:grid;gap:8px}.wallet-rank{display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:17px;padding:11px}.wallet-rank.best{border-color:#90cbaa;box-shadow:0 7px 22px rgba(13,155,89,.08)}.wallet-rank.warn{background:#fffaf3}.wallet-rank.disabled{opacity:.62}.wallet-rank-logo{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:900}.wallet-rank b{font-size:10px}.wallet-rank p{font-size:8px;color:var(--muted);margin:3px 0 5px;line-height:1.35}.rank-side{text-align:right}.rank-side strong{display:block;font-size:10px;color:var(--green)}.rank-side span{display:block;font-size:7px;color:var(--muted);margin-top:3px}
+    .payment-review{background:#fff;border:1px solid var(--line);border-radius:22px;padding:15px}.review-amount{text-align:center;padding:8px 0 14px;border-bottom:1px dashed var(--line)}.review-amount span{font-size:8px;color:var(--muted);text-transform:uppercase;font-weight:800}.review-amount strong{display:block;font-size:31px;color:var(--navy);margin-top:4px;letter-spacing:-.8px}.review-row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #f0f2f6;font-size:9.5px}.review-row:last-child{border:0}.review-row span{color:var(--muted)}.review-row strong{text-align:right}.review-source{display:flex;align-items:center;gap:8px}.review-source .wallet-logo{width:30px;height:30px;border-radius:10px}
+    .pay-pin-merchant{text-align:center;margin-top:8px}.pay-pin-merchant .wallet-logo{width:54px;height:54px;border-radius:18px;margin:0 auto 10px}.pay-pin-merchant h2{font-size:18px;margin:4px 0}.pay-pin-merchant p{font-size:9px;color:var(--muted);margin:0}.payment-pin-dots{display:flex;justify-content:center;gap:12px;margin:22px 0 18px}.payment-pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid #cfd6e4}.payment-pin-dot.filled{background:var(--navy);border-color:var(--navy)}
+    .updated-balance{margin-top:12px;background:var(--blue-soft);border:1px solid #cfe0ff;border-radius:17px;padding:12px;display:flex;justify-content:space-between;align-items:center}.updated-balance span{font-size:8.5px;color:var(--muted)}.updated-balance strong{display:block;font-size:15px;color:var(--navy);margin-top:3px}.cashback-pending{font-size:8px;color:var(--orange);font-weight:800;text-align:right}
+
+    @media(max-width:880px){
+      .stage{display:block;padding:0;background:var(--bg)}
+      .phone{width:100%;height:100vh;min-height:100vh;border:0;border-radius:0;box-shadow:none}
+      .phone::before{display:none}.phone-screen{border-radius:0}.statusbar{padding-top:calc(7px + env(safe-area-inset-top,0px));height:calc(32px + env(safe-area-inset-top,0px));flex-basis:calc(32px + env(safe-area-inset-top,0px))}
+      .investor-panel{display:none}
+    }
+    @media(max-height:760px) and (min-width:881px){.phone{height:700px;min-height:700px}.investor-panel{max-height:700px}}
+
+
+    /* monthly wallet budget & allocation */
+    .budget-summary{border-radius:24px;padding:16px;background:linear-gradient(145deg,#0b244f,#1769ff);color:#fff;box-shadow:0 14px 30px rgba(23,105,255,.22)}
+    .budget-summary small{font-size:8px;text-transform:uppercase;letter-spacing:.8px;color:#cfe0ff;font-weight:900}.budget-summary h2{font-size:25px;margin:7px 0 4px}.budget-summary p{font-size:9px;line-height:1.45;color:#dce7ff;margin:0}
+    .budget-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:13px}.budget-kpi{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.12);border-radius:13px;padding:9px}.budget-kpi span{display:block;font-size:7px;color:#cfe0ff}.budget-kpi b{display:block;font-size:10px;margin-top:3px}
+    .budget-wallet{background:#fff;border:1px solid var(--line);border-radius:19px;padding:13px;margin-top:9px}.budget-wallet-head{display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center}.budget-wallet-logo{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;color:#fff;font-weight:900}.budget-wallet-head b{font-size:10.5px}.budget-wallet-head p{font-size:8px;color:var(--muted);margin:3px 0 0}.budget-wallet-head strong{font-size:11px}.budget-progress{height:8px;border-radius:99px;background:#edf0f5;overflow:hidden;margin-top:11px}.budget-progress span{height:100%;display:block;border-radius:99px;background:var(--green)}.budget-progress.warn span{background:var(--orange)}.budget-progress.over span{background:var(--red)}
+    .budget-recommendation{display:flex;align-items:flex-start;gap:7px;margin:7px 2px 0;color:#59657e;font-size:8.5px;line-height:1.45}.budget-recommendation .icon{color:var(--blue);flex:0 0 auto;margin-top:1px}.budget-recommendation b{color:var(--blue)}
+    .auto-budget-box{margin-top:10px;padding:12px;border-radius:17px;background:linear-gradient(135deg,var(--blue-soft),#f3efff);border:1px solid #d5e1ff}.auto-budget-box b{font-size:10.5px;color:var(--navy)}.auto-budget-box p{font-size:8.5px;color:var(--muted);line-height:1.45;margin:4px 0 9px}
+    .budget-meta{display:flex;justify-content:space-between;gap:8px;margin-top:7px;font-size:8px;color:var(--muted)}.budget-meta b{color:var(--ink)}
+    .budget-input-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.budget-field{border:1px solid var(--line);border-radius:13px;padding:9px 10px;background:#fafbfe}.budget-field label{display:block;font-size:7.5px;color:var(--muted);font-weight:800}.budget-field input{width:100%;border:0;background:transparent;outline:0;font-size:11px;font-weight:900;color:var(--navy);padding:4px 0 0}
+    .budget-alert{border-radius:19px;padding:13px;background:linear-gradient(145deg,#fff6e9,#fff);border:1px solid #ffe0b2;display:flex;gap:10px;align-items:flex-start}.budget-alert.red{background:linear-gradient(145deg,#fff0f2,#fff);border-color:#ffcbd2}.budget-alert-icon{width:36px;height:36px;border-radius:13px;background:var(--orange-soft);color:var(--orange);display:grid;place-items:center;flex:0 0 auto}.budget-alert.red .budget-alert-icon{background:var(--red-soft);color:var(--red)}.budget-alert b{font-size:10.5px}.budget-alert p{font-size:8.5px;color:var(--muted);line-height:1.45;margin:4px 0 8px}
+    .budget-rule{display:flex;align-items:flex-start;gap:9px;padding:10px 0;border-bottom:1px solid #f0f2f6}.budget-rule:last-child{border:0}.budget-rule .dot{width:24px;height:24px;border-radius:9px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;flex:0 0 auto}.budget-rule b{font-size:9.5px}.budget-rule span{display:block;font-size:8px;color:var(--muted);margin-top:2px;line-height:1.4}
+    .budget-intro-hero{border-radius:28px;padding:21px 18px;background:linear-gradient(145deg,#0b244f,#1769ff 65%,#6a48db);color:#fff;position:relative;overflow:hidden;box-shadow:0 16px 34px rgba(23,105,255,.24)}
+    .budget-intro-hero::after{content:"";position:absolute;width:190px;height:190px;border-radius:50%;right:-110px;bottom:-115px;background:rgba(255,255,255,.1)}
+    .budget-intro-hero h1{font-size:25px;line-height:1.12;margin:12px 0 8px;position:relative;z-index:1}.budget-intro-hero p{font-size:10px;line-height:1.55;color:#dce7ff;margin:0;max-width:270px;position:relative;z-index:1}
+    .budget-intro-icon{width:54px;height:54px;border-radius:18px;background:rgba(255,255,255,.14);display:grid;place-items:center;position:relative;z-index:1}.budget-intro-icon .icon{width:30px;height:30px}
+    .budget-why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.budget-why{background:#fff;border:1px solid var(--line);border-radius:17px;padding:11px 9px}.budget-why .bi{width:31px;height:31px;border-radius:11px;display:grid;place-items:center;background:var(--blue-soft);color:var(--blue);margin-bottom:8px}.budget-why b{display:block;font-size:9px;line-height:1.3}.budget-why span{display:block;font-size:7.5px;color:var(--muted);line-height:1.4;margin-top:3px}
+    .overall-budget-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px;margin-top:10px}.overall-budget-card label{font-size:8px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:900}.overall-budget-input{display:flex;align-items:center;gap:8px;margin-top:8px;border:1.5px solid #cfe0ff;background:var(--blue-soft);border-radius:15px;padding:11px 12px}.overall-budget-input span{font-size:12px;font-weight:900;color:var(--blue)}.overall-budget-input input{flex:1;border:0;outline:0;background:transparent;color:var(--navy);font-size:20px;font-weight:900;min-width:0}
+    .budget-home-card{margin-top:12px;border-radius:22px;padding:14px;background:linear-gradient(145deg,#eef4ff,#f8f3ff);border:1px solid #d9e2ff}.budget-home-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.budget-home-top small{font-size:7.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--purple);font-weight:900}.budget-home-top h3{font-size:15px;margin:4px 0 2px;color:var(--navy)}.budget-home-top p{font-size:8px;color:var(--muted);margin:0}.budget-home-value{text-align:right}.budget-home-value b{display:block;font-size:14px;color:var(--navy)}.budget-home-value span{font-size:7.5px;color:var(--muted)}
+    .budget-home-progress{height:8px;border-radius:99px;background:#fff;overflow:hidden;margin-top:11px}.budget-home-progress span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--purple))}.budget-home-meta{display:flex;justify-content:space-between;margin-top:7px;font-size:7.5px;color:var(--muted)}
+    .budget-success-hero{text-align:center;padding:8px 8px 0}.budget-success-hero h1{font-size:24px;color:var(--navy);margin:12px 0 7px}.budget-success-hero p{font-size:10px;color:var(--muted);line-height:1.5;margin:0 12px}.budget-success-list{display:grid;gap:8px;margin-top:14px}.budget-success-item{display:grid;grid-template-columns:36px 1fr auto;gap:9px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:15px;padding:10px}.budget-success-item .wallet-logo{width:36px;height:36px;border-radius:12px}.budget-success-item b{font-size:9.5px}.budget-success-item span{display:block;font-size:7.5px;color:var(--muted);margin-top:2px}.budget-success-item strong{font-size:10px;color:var(--navy)}
+
+    /* account & wallet management */
+    .account-manage-hero{border-radius:24px;padding:16px;background:linear-gradient(145deg,#0b244f,#1769ff);color:#fff;box-shadow:0 14px 30px rgba(23,105,255,.2)}
+    .account-manage-hero small{font-size:8px;letter-spacing:.8px;text-transform:uppercase;color:#cfe0ff;font-weight:900}.account-manage-hero h2{font-size:24px;margin:7px 0 4px}.account-manage-hero p{font-size:9px;line-height:1.5;color:#dce7ff;margin:0}
+    .connected-account{display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;margin-top:8px}.connected-account .wallet-logo{width:42px;height:42px;border-radius:14px}.connected-account b{font-size:10.5px}.connected-account p{font-size:8px;color:var(--muted);margin:3px 0 0}.connected-account .account-side{text-align:right}.connected-account .account-side strong{display:block;font-size:10px}.connected-account .account-side span{display:block;font-size:7.5px;color:var(--green);font-weight:800;margin-top:3px}
+    .add-account-card{width:100%;border:1.5px dashed #afc8ff;background:linear-gradient(145deg,#f4f8ff,#fff);border-radius:19px;padding:14px;display:flex;align-items:center;gap:11px;color:var(--blue);text-align:left}.add-account-card .plus{width:42px;height:42px;border-radius:14px;background:var(--blue-soft);display:grid;place-items:center;font-size:22px;font-weight:700}.add-account-card b{font-size:11px;color:var(--navy)}.add-account-card span{display:block;font-size:8px;color:var(--muted);margin-top:3px}
+    .source.connected{opacity:.62;background:#f7f8fb}.source.connected::after{content:"Terhubung";margin-left:auto;font-size:7.5px;font-weight:900;color:var(--green);background:var(--green-soft);padding:4px 6px;border-radius:99px}.source.connected .source-logo{filter:saturate(.65)}
+    .mini-actions{display:flex;gap:7px;margin-top:8px}.mini-actions .btn{min-height:36px;padding:8px 10px;font-size:9px;border-radius:11px}
+    .add-wallet-tile{scroll-snap-align:start;min-width:132px;border-radius:20px;padding:13px;background:linear-gradient(145deg,#f4f8ff,#fff);border:1.5px dashed #abc5ff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;color:var(--blue)}.add-wallet-tile .plus{width:38px;height:38px;border-radius:13px;background:var(--blue-soft);display:grid;place-items:center;font-size:22px}.add-wallet-tile b{font-size:9.5px;color:var(--navy);margin-top:8px}.add-wallet-tile span{font-size:7.5px;color:var(--muted);margin-top:3px}
+
+    /* forced mobile-only presentation */
+    .stage{display:block!important;padding:0!important;background:var(--bg)!important}
+    .phone-wrap{display:block!important}
+    .phone{width:100%!important;height:100vh!important;min-height:100vh!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+    .phone::before{display:none!important}
+    .phone-screen{border-radius:0!important}
+    .investor-panel{display:none!important}
+    .statusbar{padding-top:calc(7px + env(safe-area-inset-top,0px))!important;height:calc(32px + env(safe-area-inset-top,0px))!important;flex-basis:calc(32px + env(safe-area-inset-top,0px))!important}
+
+  </style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.8 12 3l9 7.8v9.2a1 1 0 0 1-1 1h-5.5v-6h-5v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 15a3 3 0 0 1-3 3H9l-5 3v-3.5A3 3 0 0 1 2 15V7a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3z"/><path d="M7 10h.01M12 10h.01M17 10h.01"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19V3"/><path d="M2 19h22"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 7v14"/><path d="M12 7H7.5a2.5 2.5 0 1 1 2.2-3.7L12 7Zm0 0h4.5a2.5 2.5 0 1 0-2.2-3.7L12 7Z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-3.8 8-10V5l-8-3-8 3v7c0 6.2 8 10 8 10Z"/><path d="m9 12 2 2 4-5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 2 1.7 5.3L19 9l-5.3 1.7L12 16l-1.7-5.3L5 9l5.3-1.7L12 2Z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 6h16a2 2 0 0 1 2 2v11H5a2 2 0 0 1-2-2V6Z"/><path d="M3 6c0-1.1.9-2 2-2h13v4M16 12h5v4h-5a2 2 0 0 1 0-4Z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
+  <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/><path d="M8 9h8v6H8z"/></symbol>
+  <symbol id="i-pie" viewBox="0 0 24 24"><path d="M11 3a9 9 0 1 0 9 9h-9Z"/><path d="M14 3.5V9h5.5A8 8 0 0 0 14 3.5Z"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 3h2l2.4 11.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L21 7H7"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 11v6M12 7h.01"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2.8 20h18.4L12 3Z"/><path d="M12 9v5M12 17h.01"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3M15 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+</svg>
+
+<div class="stage">
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="phone-screen" id="phoneScreen">
+        <div class="statusbar" id="statusbar">
+          <span>9:41</span>
+          <div class="status-icons"><span>●●●</span><span>WiFi</span><span>▰</span></div>
+        </div>
+        <main class="view" id="view"></main>
+        <nav class="bottom-nav hidden" id="bottomNav"></nav>
+      </div>
+    </div>
+  </div>
+
+  <aside class="investor-panel">
+    <div class="brand-row">
+      <div class="brand-mark"><svg class="icon xl"><use href="#i-spark"/></svg></div>
+      <div><div class="brand-name">SAKU</div><div class="brand-sub">AI FINANCIAL DECISION ASSISTANT</div></div>
+    </div>
+    <div class="pitch"><strong>Bukan sekadar mencatat uang yang sudah keluar.</strong> SAKU hadir sebelum transaksi untuk membantu pengguna memilih cara bayar paling untung dan mengambil keputusan finansial yang lebih baik.</div>
+
+    <div class="panel-section">
+      <div class="panel-title">Investor walkthrough</div>
+      <div class="story-list" id="storyList">
+        <button class="story-btn" data-story="problem"><span class="story-number">01</span><span class="story-copy"><b>Problem & Value</b><span>Promo tersebar, keputusan bayar melelahkan.</span></span><svg class="icon sm story-arrow"><use href="#i-chevron"/></svg></button>
+        <button class="story-btn" data-story="trust"><span class="story-number">02</span><span class="story-copy"><b>Trust Gateway</b><span>Read-only, consent jelas, progressive linking.</span></span><svg class="icon sm story-arrow"><use href="#i-chevron"/></svg></button>
+        <button class="story-btn" data-story="moneycontrol"><span class="story-number">03</span><span class="story-copy"><b>Account & Budget Control</b><span>Tambah akun, lihat saldo, dan atur limit per wallet.</span></span><svg class="icon sm story-arrow"><use href="#i-chevron"/></svg></button>
+        <button class="story-btn" data-story="aha"><span class="story-number">04</span><span class="story-copy"><b>Scan QR & AI Decision</b><span>AI memilih dompet yang paling memungkinkan.</span></span><svg class="icon sm story-arrow"><use href="#i-chevron"/></svg></button>
+        <button class="story-btn" data-story="habit"><span class="story-number">05</span><span class="story-copy"><b>Daily Habit</b><span>Chat, insight, dan “Can I Afford This?”.</span></span><svg class="icon sm story-arrow"><use href="#i-chevron"/></svg></button>
+        <button class="story-btn" data-story="revenue"><span class="story-number">06</span><span class="story-copy"><b>Revenue & Moat</b><span>Attribution, affiliate, partner, dan data flywheel.</span></span><svg class="icon sm story-arrow"><use href="#i-chevron"/></svg></button>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">Target hypotheses — not actuals</div>
+      <div class="metric-grid">
+        <div class="metric"><small>Activation</small><strong>40%</strong><span>Mencapai first recommendation</span></div>
+        <div class="metric"><small>Speed</small><strong>&lt;3s</strong><span>Time to recommendation</span></div>
+        <div class="metric"><small>Adoption</small><strong>30%</strong><span>Feature adoption target</span></div>
+        <div class="metric"><small>Acceptance</small><strong>20%</strong><span>Recommendation accepted</span></div>
+      </div>
+      <div class="principle"><b>Trust principle:</b> ranking selalu memaksimalkan manfaat pengguna. Sponsored placement wajib transparan dan tidak boleh mengubah urutan rekomendasi.</div>
+    </div>
+
+    <div class="panel-actions">
+      <button id="resetDemo">Reset Demo</button>
+      <button class="primary" id="openApp">Buka Produk Utama</button>
+    </div>
+  </aside>
+</div>
+
+<script>
+(() => {
+  const view = document.getElementById('view');
+  const bottomNav = document.getElementById('bottomNav');
+  const phoneScreen = document.getElementById('phoneScreen');
+  const storyList = document.getElementById('storyList');
+  const state = {
+    route: 'splash',
+    history: [],
+    name: 'Timothy',
+    phone: '812 3456 7890',
+    demoMerchant: 'GoFood',
+    amount: 85000,
+    selectedSource: null,
+    linkOrigin: 'onboarding',
+    lastLinkedSource: null,
+    linked: [],
+    wallets: {},
+    walletOrder:[],
+    qr:{merchant:'Kopi Kenangan',category:'F&B',amount:68000,emoji:'☕',scenario:'coffee'},
+    paymentPin:'',
+    lastPayment:null,
+    transactions:[],
+    savings: 0,
+    points: 0,
+    pin: '',
+    messages: [
+      {from:'ai', text:'Halo Timothy 👋 Sebelum kamu bayar atau checkout, tanya aku dulu. Aku akan cari metode paling untung dan cek dampaknya ke keuanganmu.'}
+    ],
+    permissions:{balance:true,transactions:true,merchant:true,marketing:false},
+    activeStory:null,
+    overlay:null,
+    transactionDone:false,
+    monthlyBudgetEnabled:false,
+    totalMonthlyLimit:0,
+    budgetWarningThreshold:80,
+    budgetSetupCompleted:false,
+    otpCooldown:42,
+    accountCatalog:{
+      GoPay:{balance:235000,reserve:50000,monthlyLimit:400000,spentThisMonth:285000,color:'#10a46a',soft:'#e6f8ef',letter:'G',type:'E-wallet',updated:'Baru saja'},
+      OVO:{balance:72500,reserve:20000,monthlyLimit:250000,spentThisMonth:98000,color:'#5c37a5',soft:'#f0eaff',letter:'O',type:'E-wallet',updated:'Baru saja'},
+      DANA:{balance:180000,reserve:40000,monthlyLimit:300000,spentThisMonth:145000,color:'#1686ea',soft:'#eaf2ff',letter:'D',type:'E-wallet',updated:'Baru saja'},
+      BCA:{balance:8125000,reserve:6500000,monthlyLimit:1000000,spentThisMonth:920000,color:'#1559b5',soft:'#eaf2ff',letter:'B',type:'Rekening bank',updated:'Baru saja'},
+      ShopeePay:{balance:96000,reserve:20000,monthlyLimit:200000,spentThisMonth:44000,color:'#ef5c2f',soft:'#fff0e9',letter:'S',type:'E-wallet',updated:'Baru saja'},
+      Mandiri:{balance:4250000,reserve:3000000,monthlyLimit:750000,spentThisMonth:310000,color:'#104f9c',soft:'#eaf2ff',letter:'M',type:'Rekening bank',updated:'Baru saja'},
+      BRI:{balance:2180000,reserve:1500000,monthlyLimit:500000,spentThisMonth:125000,color:'#155db1',soft:'#eaf2ff',letter:'R',type:'Rekening bank',updated:'Baru saja'},
+      blu:{balance:620000,reserve:250000,monthlyLimit:300000,spentThisMonth:85000,color:'#18a6d8',soft:'#e8f8ff',letter:'b',type:'Bank digital',updated:'Baru saja'},
+      SeaBank:{balance:340000,reserve:100000,monthlyLimit:220000,spentThisMonth:78000,color:'#f29a24',soft:'#fff3e4',letter:'S',type:'Bank digital',updated:'Baru saja'}
+    }
+  };
+
+  const routesWithNav = ['home','insight','qr-scan','assistant','profile'];
+  const navItems = [
+    ['home','i-home','Beranda'],['insight','i-chart','Insight'],['qr-scan','i-scan','Scan'],['assistant','i-chat','AI SAKU'],['profile','i-user','Profil']
+  ];
+  const storyRoutes = {problem:'demo',trust:'trust',moneycontrol:'accounts',aha:'qr-scan',habit:'assistant',revenue:'qr-success'};
+  const money = n => 'Rp' + Number(n||0).toLocaleString('id-ID');
+  const availableAccountNames = () => Object.keys(state.accountCatalog).filter(n=>!state.linked.includes(n));
+  const selectFirstAvailableAccount = () => { const next=availableAccountNames()[0]; if(next) state.selectedSource=next; };
+  const resetFinancialProfile = () => {
+    state.linked=[];state.wallets={};state.walletOrder=[];state.transactions=[];state.savings=0;state.points=0;
+    state.totalMonthlyLimit=0;state.monthlyBudgetEnabled=false;state.budgetSetupCompleted=false;state.lastLinkedSource=null;
+    state.lastPayment=null;state.transactionDone=false;state.selectedSource=null;state.pin='';state.paymentPin='';
+    state.permissions={balance:true,transactions:true,merchant:true,marketing:false};
+    state.messages=[{from:'ai',text:'Halo 👋 Sebelum kamu bayar atau checkout, tanya aku dulu. Aku akan mencari metode yang paling aman dan menguntungkan.'}];
+  };
+  const icon = (id,cls='') => `<svg class="icon ${cls}"><use href="#${id}"/></svg>`;
+  const go = (route, push=true) => {
+    if(push && state.route !== route) state.history.push(state.route);
+    state.route = route;
+    state.overlay = null;
+    render();
+  };
+  const back = () => {
+    const previous = state.history.pop() || 'home';
+    state.route = previous;
+    state.overlay = null;
+    render();
+  };
+  const showToast = (text) => {
+    const old = phoneScreen.querySelector('.toast'); if(old) old.remove();
+    const toast = document.createElement('div'); toast.className='toast'; toast.innerHTML=`${icon('i-check','sm')}<span>${text}</span>`;
+    phoneScreen.appendChild(toast); setTimeout(()=>toast.remove(),2200);
+  };
+  let otpTimer=null;
+  const updateOtpCountdown = () => {
+    const button=document.getElementById('resendOtp');if(!button)return;
+    const seconds=Math.max(0,state.otpCooldown||0),label=`00:${String(seconds).padStart(2,'0')}`;
+    button.disabled=seconds>0;button.textContent=seconds>0?`Kirim ulang dalam ${label}`:'Kirim ulang sekarang';
+  };
+  const startOtpCountdown = (reset=false) => {
+    if(reset)state.otpCooldown=42;
+    if(otpTimer)clearInterval(otpTimer);
+    updateOtpCountdown();
+    if((state.otpCooldown||0)<=0)return;
+    otpTimer=setInterval(()=>{if(state.route!=='otp'){clearInterval(otpTimer);otpTimer=null;return;}state.otpCooldown=Math.max(0,state.otpCooldown-1);updateOtpCountdown();if(state.otpCooldown===0){clearInterval(otpTimer);otpTimer=null;}},1000);
+  };
+  const topbar = (title,sub='',right='') => `<div class="top-appbar"><button class="back-btn" data-action="back">${icon('i-arrow-left')}</button><div class="grow" style="text-align:center"><div class="top-title">${title}</div>${sub?`<div class="top-subtitle">${sub}</div>`:''}</div>${right||'<span style="width:38px"></span>'}</div>`;
+  const investorButton = () => `<button class="icon-btn" data-action="investor-lens" aria-label="Investor lens">${icon('i-info')}</button>`;
+  const logo = () => `<div class="logo-mini">${icon('i-spark','lg')}</div>`;
+  const hasAccounts = () => state.walletOrder.length > 0;
+  const emptyState = (iconId,title,copy,action,label) => `<div class="empty-state"><div class="empty-icon">${icon(iconId,'lg')}</div><h3>${title}</h3><p>${copy}</p>${action?`<button class="btn primary sm" style="margin:auto" ${action.startsWith('route:')?`data-route="${action.slice(6)}"`:`data-action="${action}"`}>${label}</button>`:''}</div>`;
+
+  const walletTotal = () => state.walletOrder.reduce((sum,name)=>sum+state.wallets[name].balance,0);
+  const totalMonthlySpent = () => state.walletOrder.reduce((sum,name)=>sum+(state.wallets[name].spentThisMonth||0),0);
+  const overallBudgetRemaining = () => Math.max(0,(state.totalMonthlyLimit||0)-totalMonthlySpent());
+  const overallBudgetPct = () => state.totalMonthlyLimit?Math.round(totalMonthlySpent()/state.totalMonthlyLimit*100):0;
+  const protectedBalanceCapacity = () => state.walletOrder.reduce((sum,name)=>sum+Math.max(0,state.wallets[name].balance-state.wallets[name].reserve),0);
+  const safeToSpend = () => state.monthlyBudgetEnabled?Math.min(protectedBalanceCapacity(),overallBudgetRemaining()):protectedBalanceCapacity();
+  const budgetRemaining = name => {const w=state.wallets[name],limitLeft=Math.max(0,(w.monthlyLimit||0)-(w.spentThisMonth||0)),cashAvailable=Math.max(0,w.balance-(w.reserve||0));return Math.min(limitLeft,cashAvailable);};
+  const budgetPct = name => { const w=state.wallets[name]; return w.monthlyLimit?Math.round((w.spentThisMonth||0)/w.monthlyLimit*100):0; };
+  const budgetStatus = name => budgetPct(name)>=100?'over':budgetPct(name)>=state.budgetWarningThreshold?'warn':'ok';
+  const roundBudget = n => Math.max(0,Math.round(Number(n||0)/10000)*10000);
+  const recommendedReserve = name => { const w=state.wallets[name]; const ratio=w.type==='Rekening bank'?.65:w.type==='Bank digital'?.4:.2; return Math.min(w.balance,roundBudget(w.balance*ratio)); };
+  const recommendedWalletBudget = name => { const w=state.wallets[name],spent=w.spentThisMonth||0,reserve=recommendedReserve(name),capacity=Math.max(0,w.balance-reserve),futureAllowance=Math.min(capacity,roundBudget(Math.max(w.balance*.25,spent*.15))); return spent+futureAllowance; };
+  const recommendedTotalBudget = () => state.walletOrder.reduce((s,n)=>s+recommendedWalletBudget(n),0);
+  const walletCard = (name,index=0) => {
+    const w=state.wallets[name];
+    return `<div class="wallet-card ${index===0?'primary-wallet':''}" style="--wallet-color:${w.color};--wallet-soft:${w.soft}"><div class="wallet-top"><div class="wallet-logo" style="--wallet-color:${w.color}">${w.letter}</div><div><div class="wallet-name">${name}</div><div class="wallet-type">${w.type} · ${w.updated}</div></div></div><div class="wallet-balance">${money(w.balance)}</div><div class="wallet-caption">Saldo tersedia</div><div class="wallet-available"><span>Sisa budget bulan ini</span><b>${money(budgetRemaining(name))}</b></div></div>`;
+  };
+  const setQrScenario = key => {
+    const map={
+      coffee:{merchant:'Kopi Kenangan',category:'F&B',amount:68000,emoji:'☕',scenario:'coffee'},
+      grocery:{merchant:'Alfamart',category:'Retail',amount:125500,emoji:'🛒',scenario:'grocery'},
+      lunch:{merchant:'Bakmi GM',category:'F&B',amount:92000,emoji:'🍜',scenario:'lunch'}
+    };
+    state.qr={...map[key]||map.coffee};
+  };
+  const qrOptions = () => {
+    const amount=state.qr.amount, food=state.qr.category==='F&B';
+    const offers={
+      GoPay:{benefit:food&&amount>=50000?Math.min(15000,Math.round(amount*.20)):0,desc:food?'Cashback 20% · maks Rp15.000':'Promo QRIS 5%'},
+      OVO:{benefit:food&&amount>=60000?Math.min(10000,Math.round(amount*.12)):0,desc:food?'OVO Points 12% · maks Rp10.000':'Tanpa promo aktif'},
+      DANA:{benefit:amount>=50000?10000:0,desc:'Voucher QRIS Rp10.000'},
+      BCA:{benefit:0,desc:'Pembayaran langsung dari rekening'}
+    };
+    return state.walletOrder.map(name=>{
+      const w=state.wallets[name], canPay=w.balance>=amount, remaining=w.balance-amount, safe=canPay&&remaining>=w.reserve;
+      const projectedSpend=(w.spentThisMonth||0)+amount;
+      const withinBudget=!w.monthlyLimit||projectedSpend<=w.monthlyLimit;
+      const budgetAfter=Math.max(0,(w.monthlyLimit||0)-projectedSpend);
+      const projectedOverallSpend=totalMonthlySpent()+amount;
+      const withinOverallBudget=!state.totalMonthlyLimit||projectedOverallSpend<=state.totalMonthlyLimit;
+      const overallBudgetAfter=Math.max(0,(state.totalMonthlyLimit||0)-projectedOverallSpend);
+      const offer=offers[name]||{benefit:0,desc:'Tidak ada promo khusus · saldo & budget tetap dianalisis'};
+      const benefit=offer.benefit, fee=0;
+      const budgetPenalty=withinBudget?0:1200000;
+      const overallPenalty=withinOverallBudget?0:900000;
+      const nearLimitPenalty=withinBudget&&w.monthlyLimit&&projectedSpend/w.monthlyLimit>=.9?350000:0;
+      const score=canPay?(benefit*100+(safe?500000:0)+(withinBudget?650000:0)+(withinOverallBudget?350000:0)+Math.min(Math.max(remaining,0),200000)/10-budgetPenalty-overallPenalty-nearLimitPenalty-fee):-1;
+      return {name,w,canPay,safe,withinBudget,withinOverallBudget,budgetAfter,overallBudgetAfter,projectedSpend,projectedOverallSpend,remaining,benefit,fee,desc:offer.desc,score};
+    }).sort((a,b)=>b.score-a.score);
+  };
+  const qrRecommendation = () => qrOptions()[0] || null;
+  const optionRow = (o,index) => {
+    const status=!o.canPay?'Saldo tidak cukup':!o.withinOverallBudget?'Melewati total budget':!o.withinBudget?'Melewati budget wallet':!o.safe?'Melewati saldo aman':index===0?'Paling direkomendasikan':'Bisa digunakan';
+    const cls=!o.canPay?'disabled':(!o.withinOverallBudget||!o.withinBudget||!o.safe)?'warn':index===0?'best':'';
+    const badgeClass=!o.canPay?'red':(!o.withinOverallBudget||!o.withinBudget||!o.safe)?'orange':index===0?'green':'blue';
+    return `<div class="wallet-rank ${cls}"><div class="wallet-rank-logo" style="background:${o.w.color}">${o.w.letter}</div><div><div class="row" style="gap:5px"><b>${o.name}</b><span class="badge ${badgeClass}">${status}</span></div><p>Saldo ${money(o.w.balance)} · sisa budget ${money(o.budgetAfter)}<br>${o.desc}</p></div><div class="rank-side"><strong>${o.benefit?'+ '+money(o.benefit):'Tanpa promo'}</strong><span>${o.withinOverallBudget&&o.withinBudget?'budget aman':'perlu konfirmasi'}</span></div></div>`;
+  };
+  const recentTransaction = t => `<div class="row" style="gap:10px;padding:9px 0;border-bottom:1px solid #f1f3f7"><div class="category-icon" style="background:var(--blue-soft);width:38px;height:38px">${t.emoji}</div><div class="grow"><b style="font-size:10px">${t.merchant}</b><p class="helper" style="margin:3px 0 0">${t.wallet} · ${t.time}</p></div><b style="font-size:10px">-${money(t.amount)}</b></div>`;
+  const completeQrPayment = () => {
+    const rec=qrRecommendation(), w=state.wallets[rec.name];
+    if(!rec.canPay){showToast('Saldo tidak cukup untuk menyelesaikan pembayaran.');return;}
+    w.balance-=state.qr.amount;
+    w.spentThisMonth=(w.spentThisMonth||0)+state.qr.amount;
+    state.savings+=rec.benefit;
+    state.points+=20;
+    state.lastPayment={merchant:state.qr.merchant,amount:state.qr.amount,wallet:rec.name,benefit:rec.benefit,balanceAfter:w.balance,budgetAfter:Math.max(0,(w.monthlyLimit||0)-(w.spentThisMonth||0)),overallBudgetAfter:overallBudgetRemaining(),emoji:state.qr.emoji};
+    state.transactions.unshift({merchant:state.qr.merchant,amount:state.qr.amount,wallet:rec.name,time:'Baru saja',emoji:state.qr.emoji});
+    persistState();
+    state.paymentPin='';
+    go('qr-success');
+  };
+  const persistState = () => { try{localStorage.setItem('sakuAppV4',JSON.stringify({linked:state.linked,wallets:state.wallets,walletOrder:state.walletOrder,transactions:state.transactions,savings:state.savings,points:state.points,totalMonthlyLimit:state.totalMonthlyLimit,monthlyBudgetEnabled:state.monthlyBudgetEnabled,budgetSetupCompleted:state.budgetSetupCompleted,name:state.name,phone:state.phone}));}catch(_){} };
+
+  function renderNav(){
+    const show = routesWithNav.includes(state.route);
+    bottomNav.classList.toggle('hidden',!show);
+    if(!show){bottomNav.innerHTML='';return;}
+    bottomNav.innerHTML = navItems.map(([r,i,l])=>r==='qr-scan'?`<button class="nav-item scan-nav ${state.route===r?'active':''}" data-route="${r}"><span class="scan-bubble">${icon(i)}</span><span>${l}</span></button>`:`<button class="nav-item ${state.route===r?'active':''}" data-route="${r}">${icon(i)}<span>${l}</span></button>`).join('');
+  }
+
+  function render(){
+    renderNav();
+    view.scrollTop=0;
+    const screen = screens[state.route] || screens.home;
+    view.innerHTML = screen();
+    updateStoryHighlight();
+    if(state.overlay) renderOverlay();
+    if(state.route==='otp') requestAnimationFrame(()=>{
+      const fields=[...phoneScreen.querySelectorAll('.otpbox')];
+      (fields.find(field=>!field.value)||fields[0])?.focus();
+      startOtpCountdown(false);
+    });
+  }
+
+  const screens = {
+    splash: () => `<section class="splash">
+      <div class="splash-logo"><div class="brand-mark">${icon('i-spark','lg')}</div>SAKU</div>
+      <div class="hero-visual"><div class="orb"></div><div class="hero-phone"><div class="hero-card"><small>Kamu akan bayar</small><b>GoFood · ${money(85000)}</b></div><div class="hero-result"><small>SAKU MEREKOMENDASIKAN</small><strong>Gunakan GoPay</strong><span>Hemat Rp15.000 cashback</span></div></div></div>
+      <div class="splash-copy"><h1>Keputusan finansial yang lebih pintar, sebelum uang keluar.</h1><p>Scan QR untuk membayar. AI langsung memilih dompet atau rekening yang saldonya cukup, paling aman, dan paling menguntungkan.</p></div>
+      <button class="btn primary" data-route="demo">Cobain Demo Scan QR & AI ${icon('i-arrow-right','sm')}</button>
+      <button class="btn ghost" data-route="register">Daftar / Masuk</button>
+      <div class="microproof"><span>${icon('i-eye','sm')} Read-only</span><span>${icon('i-lock','sm')} Password tidak disimpan</span><span>${icon('i-link','sm')} Cabut akses kapan saja</span></div>
+    </section>`,
+
+    demo: () => `<section class="screen">
+      <div class="demo-head">
+        <div class="demo-banner"><span>DEMO · DATA CONTOH</span><span class="badge">Tanpa registrasi</span></div>
+        <h2>Rasakan “menang kecil” sebelum membayar.</h2><p>SAKU membandingkan benefit dari seluruh metode pembayaran dalam satu rekomendasi.</p>
+      </div>
+      <div class="card scenario-card">
+        <div class="scenario-top"><div><span class="badge orange">Skenario contoh</span><h3 style="font-size:15px;margin:7px 0 3px">Bayar GoFood</h3><span style="font-size:10px;color:var(--muted)">Total transaksi ${money(85000)}</span></div><div class="merchant-logo">🍜</div></div>
+        <div class="recommend-hero"><span class="badge green">Rekomendasi terbaik</span><div class="winner">Gunakan GoPay</div><div class="save-amount">Hemat Rp15.000</div><div style="font-size:9px;color:var(--muted)">Cashback 20% · maks. Rp15.000 · promo masih aktif</div><div class="benefit-grid"><div class="benefit"><b>20%</b><span>Cashback</span></div><div class="benefit"><b>Eligible</b><span>Syarat terpenuhi</span></div><div class="benefit"><b>96%</b><span>Confidence</span></div></div></div>
+        <div class="transparent-box" style="margin-top:11px"><b>Mengapa GoPay?</b> Benefit bersih tertinggi setelah memperhitungkan batas cashback, minimum transaksi, biaya, dan promo yang masih aktif.</div>
+      </div>
+      <div class="section-title"><b>Tanpa SAKU</b><span class="badge red">4–7 menit</span></div>
+      <div class="card"><div class="factor-row"><div class="factor-icon" style="background:var(--red-soft);color:var(--red)">1</div><div><b>Buka banyak aplikasi</b><span>Cek GoPay, OVO, ShopeePay, kartu, dan bank.</span></div></div><div class="factor-row"><div class="factor-icon" style="background:var(--orange-soft);color:var(--orange)">2</div><div><b>Baca syarat panjang</b><span>Minimum transaksi, kuota, periode, dan kategori merchant.</span></div></div><div class="factor-row"><div class="factor-icon" style="background:var(--purple-soft);color:var(--purple)">3</div><div><b>Risiko info kedaluwarsa</b><span>Promo bisa berubah sebelum kamu checkout.</span></div></div></div>
+      <div class="sticky-actions"><button class="btn primary" data-route="register">Saya Mau Saran Seperti Ini</button><button class="btn ghost" style="margin-top:8px" data-route="home">Masuk sebagai Demo Investor</button></div>
+    </section>`,
+
+    register: () => `<section class="screen">${topbar('Daftar SAKU','Kurang dari 1 menit')}
+      <span class="eyebrow">Value-first onboarding</span><h1 class="page-title">Mulai dengan dua informasi saja.</h1><p class="page-sub">Kami tidak meminta KTP, email, atau rekening di tahap ini. Kamu dapat melihat manfaat sebelum menautkan akun.</p>
+      <div class="input-wrap"><label class="input-label">Nama lengkap</label><input class="input" id="nameInput" value="" autocomplete="name" placeholder="Masukkan nama lengkap"/></div>
+      <div class="input-wrap"><label class="input-label">Nomor WhatsApp</label><div class="input-row"><input class="input" value="+62" style="width:64px;flex:0 0 64px;text-align:center" readonly/><input class="input" id="phoneInput" value="" inputmode="numeric" autocomplete="tel" placeholder="812 3456 7890"/></div></div>
+      <div class="card" style="margin-top:15px"><div class="row"><div class="menu-icon">${icon('i-chat')}</div><div class="grow"><b style="font-size:11px">OTP dikirim via WhatsApp</b><p class="helper" style="margin:3px 0 0">Kode 6 digit berlaku 5 menit. Maksimum 5 percobaan.</p></div></div></div>
+      <label style="display:flex;gap:9px;align-items:flex-start;font-size:9.5px;color:var(--muted);line-height:1.45;margin:15px 2px"><input type="checkbox" checked style="accent-color:var(--blue);margin-top:2px">Saya menyetujui Syarat & Ketentuan dan Kebijakan Privasi SAKU.</label>
+      <div class="sticky-actions"><button class="btn primary" data-action="send-otp">Kirim OTP ${icon('i-arrow-right','sm')}</button><button class="btn ghost" style="margin-top:8px" data-route="home">Lewati untuk demo investor</button></div>
+    </section>`,
+
+    otp: () => `<section class="screen">${topbar('Verifikasi OTP','WhatsApp')}
+      <div style="text-align:center;padding:8px 8px 0"><div class="trust-shield" style="width:70px;height:70px;border-radius:24px;background:var(--blue-soft);color:var(--blue)">${icon('i-chat','xl')}</div><h1 class="page-title" style="font-size:23px">Cek WhatsApp kamu</h1><p class="page-sub">Masukkan kode 6 digit yang dikirim ke<br><b style="color:var(--ink)">+62 ${state.phone}</b></p></div>
+      <div class="otp">${[0,1,2,3,4,5].map(i=>`<input maxlength="1" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit OTP ${i+1}" class="otpbox" data-index="${i}" value="">`).join('')}</div>
+      <div style="text-align:center;font-size:10px;color:var(--muted)">Belum menerima kode? <button id="resendOtp" class="text-link" data-action="resend-otp" ${state.otpCooldown>0?'disabled':''}>${state.otpCooldown>0?`Kirim ulang dalam 00:${String(state.otpCooldown).padStart(2,'0')}`:'Kirim ulang sekarang'}</button></div>
+      <button class="btn secondary" style="margin-top:15px" data-route="register">Ganti nomor</button>
+      <div class="sticky-actions"><button class="btn primary" data-action="verify-otp">Verifikasi & Lanjutkan</button></div>
+    </section>`,
+
+    pin: () => `<section class="screen">${topbar('Buat PIN','Keamanan akun')}
+      <div style="text-align:center;padding:7px 10px"><div class="trust-shield" style="width:70px;height:70px;border-radius:24px;background:var(--purple-soft);color:var(--purple)">${icon('i-lock','xl')}</div><h1 class="page-title" style="font-size:23px">Buat PIN 6 digit</h1><p class="page-sub">PIN digunakan untuk login cepat, bukan untuk melakukan transaksi dari rekeningmu.</p></div>
+      <div class="pin-dots">${[0,1,2,3,4,5].map(i=>`<span class="pin-dot ${i<state.pin.length?'filled':''}"></span>`).join('')}</div>
+      <div class="numpad">${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(x=>x===''?'<span></span>':`<button class="numkey" data-pin="${x}">${x}</button>`).join('')}</div>
+      <p class="helper" style="text-align:center;margin-top:18px">Jangan pernah membagikan PIN kepada siapa pun, termasuk tim SAKU.</p>
+    </section>`,
+
+    trust: () => `<section class="screen">${topbar('Hubungkan Akun','Trust Center',investorButton())}
+      <div class="trust-hero"><div class="trust-shield">${icon('i-shield','xl')}</div><span class="eyebrow" style="background:var(--green-soft);color:var(--green)">Akses hanya-baca</span><h1 class="page-title" style="font-size:24px">SAKU tidak dapat memindahkan uangmu.</h1><p class="page-sub">Kami hanya membaca data yang kamu izinkan untuk menghitung rekomendasi dan insight. Password dan PIN bank tidak pernah disimpan.</p></div>
+      <div class="trust-list">
+        <div class="trust-item"><div class="ti-icon">${icon('i-eye')}</div><div><b>Hanya membaca saldo & transaksi</b><p>Tidak dapat transfer, tarik uang, membayar, atau mengubah akun.</p></div></div>
+        <div class="trust-item"><div class="ti-icon" style="background:var(--purple-soft);color:var(--purple)">${icon('i-lock')}</div><div><b>Autentikasi dilakukan oleh partner</b><p>Kamu login langsung di halaman resmi penyedia akun atau aggregator.</p></div></div>
+        <div class="trust-item"><div class="ti-icon" style="background:var(--green-soft);color:var(--green)">${icon('i-settings')}</div><div><b>Kontrol penuh ada di kamu</b><p>Lihat, batasi, atau cabut akses kapan saja melalui Consent Center.</p></div></div>
+        <div class="trust-item"><div class="ti-icon" style="background:var(--orange-soft);color:var(--orange)">${icon('i-info')}</div><div><b>Tujuan data dijelaskan</b><p>Setiap jenis data memiliki tujuan yang spesifik, terbatas, dan dapat ditinjau.</p></div></div>
+      </div>
+      <div class="consent-note"><b>Catatan demo:</b> wording legal, partner, cakupan data, dan klaim lisensi harus disesuaikan dengan hasil due diligence serta review Legal/Compliance.</div>
+      <div class="sticky-actions"><button class="btn success" data-route="link-source">Saya Mengerti, Pilih Akun</button><button class="btn ghost" style="margin-top:8px" data-route="home">Gunakan Mode Terbatas</button></div>
+    </section>`,
+
+    'link-source': () => `<section class="screen">${topbar(state.linkOrigin==='management'?'Tambah Akun / Wallet':'Pilih Sumber Pertama',state.linkOrigin==='management'?'Hubungkan sumber finansial baru':'Tambah lainnya nanti')}
+      <h1 class="page-title">${state.linkOrigin==='management'?'Akun mana yang ingin ditambahkan?':'Mulai dari akun yang paling sering dipakai.'}</h1><p class="page-sub">Koneksi bersifat hanya-baca. Setelah berhasil, saldo, budget, dan rekomendasi AI akan otomatis mempertimbangkan akun baru.</p>
+      <div class="section-title"><b>E-wallet</b><span class="badge blue">Cepat dihubungkan</span></div>
+      <div class="source-grid">
+        ${source('GoPay','#14a66b','G','Pembayaran harian')}${source('OVO','#5d38a6','O','Cashback & points')}${source('DANA','#1686ea','D','Pembayaran QRIS')}${source('ShopeePay','#ef5c2f','S','Marketplace & food')}
+      </div>
+      <div class="section-title"><b>Bank & bank digital</b><span class="helper">Pilih satu untuk demo</span></div>
+      <div class="source-grid">${source('BCA','#1559b5','B','Mobile banking')}${source('Mandiri','#104f9c','M','Livin’ by Mandiri')}${source('BRI','#155db1','R','BRImo')}${source('blu','#18a6d8','b','Bank digital BCA')}${source('SeaBank','#f29a24','S','Bank digital')}</div>
+      <div class="card" style="margin-top:13px"><div class="row"><div class="menu-icon" style="background:var(--green-soft);color:var(--green)">${icon('i-shield')}</div><div class="grow"><b style="font-size:10.5px">Izin yang diminta</b><p class="helper" style="margin:3px 0 0">Saldo, histori transaksi, merchant, dan waktu transaksi. Tidak ada izin pembayaran.</p></div><button class="text-link" data-route="consent">Detail</button></div></div>
+      <div class="sticky-actions"><button class="btn primary" data-action="start-link" ${!state.selectedSource||state.linked.includes(state.selectedSource)?'disabled style="opacity:.5"':''}>${state.selectedSource?`Hubungkan ${state.selectedSource} ${icon('i-link','sm')}`:'Pilih akun terlebih dahulu'}</button>${state.linkOrigin==='management'?'<button class="btn ghost" style="margin-top:8px" data-route="accounts">Kembali ke Akun Tersambung</button>':''}</div>
+    </section>`,
+
+    'link-progress': () => `<section class="screen"><div class="sync-loader"><div class="spinner"></div><h1 class="page-title" style="font-size:23px">Menghubungkan ${state.selectedSource}...</h1><p class="page-sub">Kamu akan diarahkan ke halaman resmi partner untuk memberikan izin akses.</p><div class="sync-steps"><div class="sync-step done">${icon('i-check','sm')} Koneksi terenkripsi dibuat</div><div class="sync-step done">${icon('i-check','sm')} Izin hanya-baca dikonfirmasi</div><div class="sync-step">${icon('i-clock','sm')} Mengambil transaksi terakhir</div><div class="sync-step">${icon('i-spark','sm')} Menyiapkan insight pertama</div></div><div class="consent-note" style="text-align:left;margin-top:18px">SAKU tidak melihat atau menyimpan password/PIN akun. Autentikasi dilakukan pada sistem partner.</div></div></section>`,
+
+    'first-value': () => `<section class="screen">${topbar('Akun Terhubung','First value moment',investorButton())}
+      <div style="text-align:center"><div class="success-check" style="width:74px;height:74px;border-radius:25px;margin:8px auto 13px">${icon('i-check','xl')}</div><span class="eyebrow" style="background:var(--green-soft);color:var(--green)">${state.selectedSource} berhasil terhubung</span><h1 class="page-title" style="font-size:24px">Insight pertamamu sudah siap.</h1><p class="page-sub">Kami memproses 23 transaksi terakhir dan menemukan satu peluang hemat yang bisa langsung dipakai.</p></div>
+      <div class="card"><span class="badge orange">Insight bulan ini</span><div class="row between" style="margin-top:9px"><div><span class="helper">Pengeluaran Food Delivery</span><div style="font-size:25px;font-weight:900;color:var(--navy);margin-top:3px">Rp487.000</div></div><div class="insight-icon">🍜</div></div><div class="divider"></div><div class="insight-strip"><div class="insight-icon" style="background:var(--green-soft);color:var(--green)">${icon('i-spark')}</div><div><b>Kamu bisa hemat sekitar Rp50.000/bulan</b><p>Dengan memilih metode pembayaran yang memiliki cashback aktif untuk transaksi food delivery.</p></div></div></div>
+      <div class="card"><div class="row between"><div><b style="font-size:11px">Kelengkapan data</b><p class="helper" style="margin:3px 0 0">1 dari 3 sumber ideal terhubung.</p></div><span class="badge blue">33%</span></div><div class="progress" style="margin-top:10px"><span style="width:33%"></span></div><div class="chip-row" style="margin-top:11px"><span class="chip active">✓ GoPay</span><span class="chip">+ Bank</span><span class="chip">+ E-wallet lain</span></div></div>
+      <div class="sticky-actions"><button class="btn primary" data-route="budget-intro">Atur Budget Bulanan</button><button class="btn ghost" style="margin-top:8px" data-route="home">Lewati, atur nanti</button></div>
+    </section>`,
+
+    accounts: () => `<section class="screen">${topbar('Akun & Wallet','Kelola sumber dana tertaut',investorButton())}
+      <div class="account-manage-hero"><small>CONNECTED MONEY VIEW</small><h2>${money(walletTotal())}</h2><p>Total saldo dari ${state.walletOrder.length} akun tertaut. Semua akun dipakai AI untuk menghitung safe-to-spend, budget, dan rekomendasi pembayaran.</p></div>
+      <div class="section-title"><b>Akun tersambung</b><span class="badge green">${state.walletOrder.length} aktif</span></div>
+      ${hasAccounts()?state.walletOrder.map(name=>{const w=state.wallets[name];return `<div class="connected-account"><div class="wallet-logo" style="--wallet-color:${w.color}">${w.letter}</div><div><b>${name}</b><p>${w.type} · sinkron ${w.updated}<br>Sisa budget ${money(budgetRemaining(name))}</p></div><div class="account-side"><strong>${money(w.balance)}</strong><span>● Aktif</span></div></div>`}).join(''):emptyState('i-wallet','Belum ada akun tersambung','Hubungkan satu rekening atau e-wallet untuk mulai melihat saldo dan rekomendasi personal.','add-account','Hubungkan akun pertama')}
+      <div class="section-title"><b>Tambah sumber dana</b><span class="helper">Progressive linking</span></div>
+      <button class="add-account-card" data-action="add-account"><span class="plus">+</span><span><b>Tambah akun bank atau e-wallet</b><span>Hubungkan ShopeePay, Mandiri, BRI, blu, SeaBank, dan lainnya.</span></span>${icon('i-chevron','sm chev')}</button>
+      <div class="card" style="margin-top:11px"><div class="factor-row"><div class="factor-icon" style="background:var(--blue-soft);color:var(--blue)">${icon('i-spark','sm')}</div><div><b>Makin lengkap, makin akurat</b><span>AI dapat memilih sumber dana yang lebih sehat ketika salah satu wallet melewati batas bulanan.</span></div></div><div class="factor-row"><div class="factor-icon" style="background:var(--green-soft);color:var(--green)">${icon('i-shield','sm')}</div><div><b>Kontrol akses per akun</b><span>Cabut atau ubah izin kapan saja melalui Consent Center.</span></div></div></div>
+      <div class="sticky-actions"><button class="btn primary" data-action="add-account">+ Tambah Akun Baru</button><button class="btn ghost" style="margin-top:8px" data-route="budget-setup">Kelola Budget Semua Akun</button></div>
+    </section>`,
+
+    'account-added': () => {const n=state.lastLinkedSource||state.selectedSource,w=state.wallets[n]||state.accountCatalog[n];return `<section class="screen">${topbar('Akun Berhasil Ditambahkan','Sinkronisasi aktif')}
+      <div class="budget-success-hero"><div class="success-check" style="width:78px;height:78px;border-radius:26px;margin:8px auto 0">${icon('i-check','xl')}</div><h1>${n} sudah terhubung.</h1><p>Saldo dan histori transaksi berhasil dibaca. AI SAKU sekarang akan mempertimbangkan ${n} dalam rekomendasi pembayaran dan monthly money plan.</p></div>
+      <div class="card" style="margin-top:16px"><div class="row between"><div class="row" style="gap:10px"><div class="wallet-logo" style="--wallet-color:${w.color};width:46px;height:46px;border-radius:15px">${w.letter}</div><div><b style="font-size:12px">${n}</b><p class="helper" style="margin:3px 0 0">${w.type} · baru saja disinkronkan</p></div></div><strong style="font-size:15px">${money(w.balance)}</strong></div><div class="divider"></div><div class="row between"><span class="helper">Rekomendasi budget awal</span><b style="font-size:10px">${money(w.monthlyLimit)} / bulan</b></div><div class="row between" style="margin-top:8px"><span class="helper">Dana minimum dijaga</span><b style="font-size:10px">${money(w.reserve)}</b></div></div>
+      <div class="card" style="margin-top:10px"><div class="factor-row"><div class="factor-icon" style="background:var(--green-soft);color:var(--green)">${icon('i-check','sm')}</div><div><b>Saldo masuk ke dashboard</b><span>Total saldo dan safe-to-spend telah diperbarui.</span></div></div><div class="factor-row"><div class="factor-icon" style="background:var(--blue-soft);color:var(--blue)">${icon('i-target','sm')}</div><div><b>Budget siap disesuaikan</b><span>Ubah batas bulanan dan dana minimum untuk akun baru ini.</span></div></div></div>
+      <div class="sticky-actions"><button class="btn primary" data-route="budget-setup">Atur Budget ${n}</button><button class="btn ghost" style="margin-top:8px" data-route="home">Kembali ke Dashboard</button></div>
+    </section>`; },
+
+
+    home: () => `<section class="screen">
+      <div class="top-appbar"><div class="row"><div class="avatar">T</div><div><div class="greeting">Selamat siang,</div><div class="greeting-name">${state.name} 👋</div></div></div><div class="row"><button class="icon-btn" data-action="investor-lens">${icon('i-info')}</button><button class="icon-btn">${icon('i-bell')}</button></div></div>
+      ${hasAccounts()?`<div class="balance-card"><div class="balance-label">Total saldo seluruh akun tertaut</div><div class="balance">${money(walletTotal())}</div><div class="balance-metrics"><div class="balance-mini"><span>Aman dibelanjakan</span><b>${money(safeToSpend())}</b></div><div class="balance-mini"><span>Total hemat SAKU</span><b style="color:#71e5a8">${money(state.savings)}</b></div></div></div>
+      ${state.monthlyBudgetEnabled?`<div class="budget-home-card"><div class="budget-home-top"><div><small>SMART MONTHLY BUDGET</small><h3>${money(overallBudgetRemaining())} tersisa</h3><p>Dari total budget ${money(state.totalMonthlyLimit)} bulan ini</p></div><div class="budget-home-value"><b>${Math.min(999,overallBudgetPct())}%</b><span>terpakai</span></div></div><div class="budget-home-progress"><span style="width:${Math.min(100,overallBudgetPct())}%"></span></div><div class="budget-home-meta"><span>Terpakai ${money(totalMonthlySpent())}</span><button class="text-link" data-route="budget-setup">Kelola budget</button></div></div>`:emptyState('i-target','Budget belum diatur','Tentukan batas pengeluaran agar AI dapat menjaga saldo amanmu.','route:budget-intro','Atur budget')}`:emptyState('i-link','Mulai dari akun pertamamu','Hubungkan bank atau e-wallet secara simulasi. Saldo dan transaksi contoh akan muncul setelah sinkronisasi.','add-account','Hubungkan akun')}
+      <div class="wallet-head"><b>Dompet & rekening kamu</b><button data-route="accounts">Kelola / Tambah</button></div>
+      <div class="wallet-strip">${state.walletOrder.map((name,i)=>walletCard(name,i)).join('')}<button class="add-wallet-tile" data-action="add-account"><span class="plus">+</span><b>Tambah akun</b><span>Bank / e-wallet</span></button></div>
+      ${state.wallets.BCA&&budgetStatus('BCA')==='over'?`<div class="budget-alert red" style="margin-top:11px"><div class="budget-alert-icon">${icon('i-alert','sm')}</div><div><b>Budget BCA sudah terlampaui</b><p>AI akan memprioritaskan akun lain yang masih sehat.</p><button class="text-link" data-route="budget-setup">Lihat & ubah budget</button></div></div>`:''}
+      <div class="scan-pay-card"><div><small>Bayar langsung dari SAKU</small><h3>Scan QR, biar AI pilih dompet terbaik.</h3><p>AI mengecek saldo, batas aman, promo aktif, dan sisa uang setelah transaksi.</p><button class="btn sm" style="background:#fff;color:var(--blue);width:auto" data-route="qr-scan">${icon('i-scan','sm')} Scan QR Sekarang</button></div><div class="scan-pay-art">${icon('i-scan','xl')}</div></div>
+      <div class="section-title"><b>Tanya cepat ke SAKU</b><button data-route="assistant">Buka chat</button></div>
+      <div class="quick-actions"><button class="quick" data-route="qr-scan"><div class="qicon" style="background:var(--blue-soft);color:var(--blue)">${icon('i-scan')}</div><b>Bayar QRIS</b><span>AI pilih dompet</span></button><button class="quick" data-route="affordability"><div class="qicon" style="background:var(--orange-soft);color:var(--orange)">${icon('i-cart')}</div><b>Mampu beli ini?</b><span>Decision check</span></button><button class="quick" data-route="insight"><div class="qicon" style="background:var(--green-soft);color:var(--green)">${icon('i-chart')}</div><b>Saya boros?</b><span>Spending insight</span></button></div>
+      <div class="section-title"><b>Aktivitas terbaru</b><button data-route="insight">Lihat semua</button></div>
+      ${state.transactions.length?`<div class="card" style="padding-top:7px;padding-bottom:7px">${state.transactions.slice(0,3).map(recentTransaction).join('')}<div class="row between" style="padding:9px 0 2px"><span class="helper">Semua saldo diperbarui otomatis setelah pembayaran.</span><span class="badge green">Sinkron aktif</span></div></div>`:emptyState('i-clock','Belum ada aktivitas','Transaksi yang disimulasikan melalui Scan QR akan tampil di sini.',hasAccounts()?'route:qr-scan':'add-account',hasAccounts()?'Coba Scan QR':'Hubungkan akun')}
+      <div class="section-title"><b>Insight hari ini</b><button data-route="insight">Detail</button></div>
+      ${state.transactions.length?`<div class="card"><div class="insight-strip"><div class="insight-icon">${icon('i-pie')}</div><div><span class="badge orange">Perlu perhatian</span><b style="display:block;margin-top:5px">Budget makan sudah terpakai 78%</b><p>SAKU menemukan pola pengeluaran dari histori akun yang baru disinkronkan.</p></div></div><button class="btn secondary sm" style="margin-top:11px" data-route="assistant">Tanya cara hemat</button></div>`:emptyState('i-spark','Belum ada insight hari ini','Insight personal akan muncul setelah data akun berhasil disinkronkan.','','')}
+    </section>`,
+
+
+    'qr-scan': () => `<section class="screen">${topbar('Scan QR Pembayaran','QRIS & merchant QR',investorButton())}
+      ${!hasAccounts()?emptyState('i-link','Hubungkan akun sebelum membayar','SAKU memerlukan minimal satu sumber dana untuk mengecek saldo dan menyelesaikan simulasi pembayaran.','add-account','Hubungkan akun sekarang'):`
+      <div class="qr-camera"><div class="camera-bar"><span class="camera-pill">${icon('i-shield','sm')} Kamera aman · tidak direkam</span><button class="camera-icon-btn">${icon('i-spark','sm')}</button></div><div class="qr-frame"><span class="qr-corner tl"></span><span class="qr-corner tr"></span><span class="qr-corner bl"></span><span class="qr-corner br"></span><span class="qr-scan-line"></span></div><div class="camera-hint"><b>Arahkan kamera ke QR merchant</b>SAKU akan membaca merchant dan nominal, lalu AI memilih sumber dana paling memungkinkan.</div></div>
+      <div class="section-title"><b>Simulasi cepat untuk presentasi</b><span class="badge blue">Investor mode</span></div>
+      <div class="scan-scenario-grid"><button class="scan-scenario" data-scenario="coffee"><span class="emoji">☕</span><b>Kopi Kenangan</b><span>Rp68.000</span></button><button class="scan-scenario" data-scenario="grocery"><span class="emoji">🛒</span><b>Alfamart</b><span>Rp125.500</span></button><button class="scan-scenario" data-scenario="lunch"><span class="emoji">🍜</span><b>Bakmi GM</b><span>Rp92.000</span></button></div>
+      <div class="consent-note"><b>Yang dianalisis AI setelah scan:</b> saldo setiap dompet, saldo aman minimum, promo aktif, syarat merchant, biaya, serta sisa saldo sesudah pembayaran.</div>`}
+    </section>`,
+
+    'qr-analysis': () => `<section class="screen"><div class="analysis-orbit"><div>${icon('i-spark','xl')}</div></div><div class="analysis-title"><span class="eyebrow">AI PAYMENT ORCHESTRATION</span><h1>Mencari dompet paling memungkinkan...</h1><p>QR berhasil dibaca. SAKU sedang membandingkan kondisi seluruh akun tertaut untuk transaksi di ${state.qr.merchant} sebesar ${money(state.qr.amount)}.</p></div><div style="margin-top:18px"><div class="analysis-step"><span class="dot">${icon('i-check','sm')}</span><span>Merchant dan nominal QR teridentifikasi</span></div><div class="analysis-step"><span class="dot">${icon('i-check','sm')}</span><span>Memeriksa saldo GoPay, OVO, DANA, dan BCA</span></div><div class="analysis-step wait"><span class="dot">${icon('i-spark','sm')}</span><span>Menghitung promo, eligibility, dan saldo setelah bayar</span></div></div></section>`,
+
+    'qr-recommendation': () => { const rec=qrRecommendation(), opts=qrOptions(); return `<section class="screen">${topbar('Rekomendasi Pembayaran','Hasil analisis QR',investorButton())}
+      <div class="merchant-detected"><div class="merchant-avatar">${state.qr.emoji}</div><div><span class="badge green">QR terbaca</span><b style="display:block;margin-top:4px">${state.qr.merchant}</b><p>${state.qr.category} · QRIS merchant verified</p></div><div class="amount"><strong>${money(state.qr.amount)}</strong><span>Nominal transaksi</span></div></div>
+      <div class="ai-pay-decision" style="margin-top:11px"><small>SAKU AI RECOMMENDS</small><h2>Pakai ${rec.name} untuk jajan kali ini.</h2><p>${state.wallets.BCA&&state.wallets.BCA.spentThisMonth>state.wallets.BCA.monthlyLimit&&rec.name!=='BCA'?'Budget BCA sudah melewati batas, jadi AI memprioritaskan wallet lain yang masih sehat. ':''}${rec.withinBudget?'Budget '+rec.name+' masih cukup. ':'Budget wallet ini akan terlampaui. '}${rec.safe?'Saldo tetap di atas dana minimum. ':''}${rec.benefit?'Kamu juga mendapat benefit '+money(rec.benefit)+'.':'Tidak ada promo aktif, tetapi kondisi budgetnya paling memungkinkan.'}</p><div class="ai-proof-grid"><div class="ai-proof"><span>Sisa budget ${rec.name}</span><b>${money(rec.budgetAfter)}</b></div><div class="ai-proof"><span>Sisa budget total</span><b>${money(rec.overallBudgetAfter)}</b></div><div class="ai-proof"><span>Benefit</span><b style="color:var(--green)">+${money(rec.benefit)}</b></div></div></div>
+      <div class="section-title"><b>Perbandingan semua dompet</b><button data-action="investor-lens">Logic AI</button></div><div class="wallet-rank-list">${opts.map(optionRow).join('')}</div>
+      <div class="consent-note"><b>Objective function:</b> saldo cukup → total budget aman → budget wallet aman → dana minimum terlindungi → benefit bersih → biaya & preferensi. Sponsored placement tidak boleh mengubah ranking.</div>
+      <div class="sticky-actions"><button class="btn success" data-action="confirm-qr-payment">Bayar ${money(state.qr.amount)} dengan ${rec.name}</button><button class="btn ghost" style="margin-top:8px" data-route="qr-scan">Scan Ulang</button></div>
+    </section>`; },
+
+    'qr-confirm': () => { const rec=qrRecommendation(); return `<section class="screen">${topbar('Konfirmasi Pembayaran','Periksa sebelum membayar')}
+      <div class="payment-review"><div class="review-amount"><span>Total pembayaran</span><strong>${money(state.qr.amount)}</strong></div><div class="review-row"><span>Merchant</span><strong>${state.qr.merchant}</strong></div><div class="review-row"><span>Sumber dana</span><strong class="review-source"><span class="wallet-logo" style="--wallet-color:${rec.w.color}">${rec.w.letter}</span>${rec.name}</strong></div><div class="review-row"><span>Saldo sebelum bayar</span><strong>${money(rec.w.balance)}</strong></div><div class="review-row"><span>Saldo setelah bayar</span><strong>${money(rec.remaining)}</strong></div><div class="review-row"><span>Sisa budget ${rec.name}</span><strong>${money(rec.budgetAfter)}</strong></div><div class="review-row"><span>Sisa total budget</span><strong>${money(rec.overallBudgetAfter)}</strong></div><div class="review-row"><span>Biaya layanan</span><strong>Rp0</strong></div><div class="review-row"><span>Benefit promo</span><strong style="color:var(--green)">+${money(rec.benefit)}</strong></div></div>
+      <div class="card" style="margin-top:11px"><div class="factor-row"><div class="factor-icon" style="background:${rec.withinBudget&&rec.withinOverallBudget?'var(--green-soft)':'var(--orange-soft)'};color:${rec.withinBudget&&rec.withinOverallBudget?'var(--green)':'var(--orange)'}">${icon('i-shield','sm')}</div><div><b>${rec.withinBudget&&rec.withinOverallBudget?'Transaksi masih dalam budget':'Transaksi membutuhkan konfirmasi tambahan'}</b><span>${rec.withinBudget&&rec.withinOverallBudget?`Sisa budget ${rec.name} ${money(rec.budgetAfter)} dan total budget ${money(rec.overallBudgetAfter)}.`:`Transaksi melewati salah satu batas bulanan yang kamu tetapkan.`}</span></div></div><div class="factor-row"><div class="factor-icon" style="background:var(--blue-soft);color:var(--blue)">${icon('i-spark','sm')}</div><div><b>AI telah memeriksa eligibility</b><span>Promo aktif, nominal memenuhi syarat, dan merchant termasuk kategori yang berlaku.</span></div></div></div>
+      <div class="sticky-actions"><button class="btn primary" data-action="pay-qr">Bayar Sekarang</button><button class="btn ghost" style="margin-top:8px" data-route="qr-recommendation">Pilih Dompet Lain</button></div>
+    </section>`; },
+
+    'qr-pin': () => { const rec=qrRecommendation(); return `<section class="screen">${topbar('Masukkan PIN SAKU','Otorisasi pembayaran')}
+      <div class="pay-pin-merchant"><div class="wallet-logo" style="--wallet-color:${rec.w.color}">${rec.w.letter}</div><span class="badge blue">${rec.name}</span><h2>${money(state.qr.amount)}</h2><p>Pembayaran ke ${state.qr.merchant}</p></div><div class="payment-pin-dots">${[0,1,2,3,4,5].map((_,i)=>`<span class="payment-pin-dot ${i<state.paymentPin.length?'filled':''}"></span>`).join('')}</div><div class="numpad">${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(x=>x===''?'<span></span>':`<button class="numkey" data-paypin="${x}">${x}</button>`).join('')}</div><button class="text-link" style="display:block;margin:15px auto 0" data-action="demo-pay-pin">Gunakan PIN demo 123456</button><p class="helper" style="text-align:center;margin-top:12px">PIN SAKU hanya mengotorisasi instruksi pembayaran melalui partner. PIN rekening atau e-wallet tidak pernah dibaca SAKU.</p>
+    </section>`; },
+
+    'qr-success': () => { const p=state.lastPayment||{merchant:state.qr.merchant,amount:state.qr.amount,wallet:qrRecommendation().name,benefit:qrRecommendation().benefit,balanceAfter:qrRecommendation().remaining,emoji:state.qr.emoji}; return `<section class="success-screen"><div class="success-check">${icon('i-check','xl')}</div><h1>Pembayaran berhasil 🎉</h1><p>${p.merchant} telah menerima pembayaran. Saldo ${p.wallet} di dashboard sudah diperbarui.</p><div class="receipt"><div class="receipt-row"><span>Merchant</span><strong>${p.merchant}</strong></div><div class="receipt-row"><span>Total pembayaran</span><strong>${money(p.amount)}</strong></div><div class="receipt-row"><span>Sumber dana</span><strong>${p.wallet}</strong></div><div class="receipt-row"><span>Cashback / benefit</span><strong class="green">+ ${money(p.benefit)}</strong></div><div class="receipt-row"><span>Status</span><strong class="green">Berhasil</strong></div></div><div class="updated-balance"><div><span>Sisa saldo ${p.wallet}</span><strong>${money(p.balanceAfter)}</strong></div><div class="cashback-pending">Sisa budget wallet<br>${money(p.budgetAfter||0)}</div></div><div class="card" style="margin-top:10px"><div class="row between"><div><b style="font-size:10px">Budget bulanan diperbarui</b><p class="helper" style="margin:3px 0 0">Sisa total budget setelah transaksi</p></div><strong style="font-size:14px;color:var(--navy)">${money(p.overallBudgetAfter||overallBudgetRemaining())}</strong></div></div><div class="event-pipeline"><small>Real-time product & revenue event</small><div class="event-flow"><div class="event done">✓ QR Scan</div><span class="event-arrow">→</span><div class="event done">✓ AI Decision</div><span class="event-arrow">→</span><div class="event done">✓ Payment</div></div><div style="font-size:8.5px;color:#a9bce1;margin-top:10px">Saldo diperbarui · recommendation accepted · transaction success · attribution eligible</div></div><div style="margin-top:auto"><button class="btn success" data-route="home">Lihat Saldo Terbaru</button><button class="btn ghost" style="margin-top:8px" data-route="qr-scan">Scan QR Lain</button></div></section>`; },
+
+    'budget-intro': () => `<section class="screen">${topbar('Atur Uang Bulanan','Langkah setelah akun terhubung',investorButton())}
+      <div class="budget-intro-hero"><div class="budget-intro-icon">${icon('i-target','xl')}</div><span class="eyebrow" style="margin-top:13px;background:rgba(255,255,255,.14);color:#fff">AI MONEY GUARDRAIL</span><h1>Tentukan uang yang boleh dipakai, sisanya kami bantu jaga.</h1><p>Atur batas pengeluaran total dan batas per wallet. Saat satu wallet hampir habis atau melewati target, AI akan mengarahkan transaksi ke sumber dana yang lebih sehat.</p></div>
+      <div class="section-title"><b>Contoh pengaturan</b><span class="badge blue">Bisa diubah kapan saja</span></div>
+      <div class="card"><div class="row between"><div class="row" style="gap:9px"><div class="wallet-logo" style="--wallet-color:#1559b5">B</div><div><b style="font-size:11px">BCA</b><p class="helper" style="margin:3px 0 0">Saldo Rp8.125.000</p></div></div><div style="text-align:right"><span class="helper">Boleh dipakai bulan ini</span><b style="display:block;font-size:14px;margin-top:3px">Rp1.000.000</b></div></div><div class="divider"></div><div class="row between"><span class="helper">Dana minimum jangan dipakai</span><b style="font-size:10px">Rp6.500.000</b></div></div>
+      <div class="budget-why-grid"><div class="budget-why"><div class="bi">${icon('i-chart','sm')}</div><b>Kontrol total</b><span>Tetapkan batas pengeluaran seluruh akun per bulan.</span></div><div class="budget-why"><div class="bi" style="background:var(--green-soft);color:var(--green)">${icon('i-wallet','sm')}</div><b>Kontrol per wallet</b><span>Atur berapa banyak yang boleh dipakai dari BCA, GoPay, OVO, dan DANA.</span></div><div class="budget-why"><div class="bi" style="background:var(--orange-soft);color:var(--orange)">${icon('i-spark','sm')}</div><b>AI mengalihkan</b><span>Saat batas tercapai, AI memilih wallet lain yang masih sehat.</span></div></div>
+      <div class="section-title"><b>Kapan AI mulai bekerja?</b></div><div class="card"><div class="budget-rule"><div class="dot">80%</div><div><b>Peringatan awal</b><span>SAKU memberi notifikasi ketika penggunaan wallet mencapai 80% dari batas.</span></div></div><div class="budget-rule"><div class="dot" style="background:var(--orange-soft);color:var(--orange)">100%</div><div><b>Alihkan rekomendasi</b><span>Wallet yang melewati batas tidak diprioritaskan untuk transaksi non-wajib.</span></div></div><div class="budget-rule"><div class="dot" style="background:var(--red-soft);color:var(--red)">!</div><div><b>Override tetap tersedia</b><span>User tetap dapat memilih wallet tersebut setelah melihat risiko dan melakukan konfirmasi.</span></div></div></div>
+      <div class="sticky-actions"><button class="btn primary" data-action="use-recommended-budget">Gunakan Rekomendasi Awal</button><button class="btn ghost" style="margin-top:8px" data-route="budget-setup">Atur Manual</button></div>
+    </section>`,
+
+    'budget-setup': () => {
+      const totalLimit=state.totalMonthlyLimit||state.walletOrder.reduce((s,n)=>s+(state.wallets[n].monthlyLimit||0),0);
+      const totalRecommendation=recommendedTotalBudget();
+      const spent=totalMonthlySpent();
+      const remaining=Math.max(0,totalLimit-spent);
+      return `<section class="screen">${topbar('Budget Bulanan','Atur batas pengeluaran tiap wallet',investorButton())}
+      <div class="budget-summary"><small>MONTHLY MONEY PLAN</small><h2>${money(totalLimit)}</h2><p>Total uang yang kamu izinkan untuk dibelanjakan bulan ini dari seluruh akun tertaut.</p><div class="budget-kpis"><div class="budget-kpi"><span>Terpakai</span><b>${money(spent)}</b></div><div class="budget-kpi"><span>Tersisa</span><b>${money(remaining)}</b></div><div class="budget-kpi"><span>Progres</span><b>${totalLimit?Math.round(spent/totalLimit*100):0}%</b></div></div></div>
+      <div class="overall-budget-card"><label>Total batas pengeluaran semua akun / bulan</label><div class="overall-budget-input"><span>Rp</span><input inputmode="numeric" autocomplete="off" data-money-input data-total-budget value="${Number(totalLimit).toLocaleString('id-ID')}"></div><div class="budget-recommendation">${icon('i-spark','sm')}<span>Rekomendasi SAKU <b>${money(totalRecommendation)}</b>/bulan, dihitung dari total saldo ${money(walletTotal())}, histori pengeluaran, dan dana minimum seluruh wallet.</span></div><div class="auto-budget-box"><b>Isi budget seluruh wallet otomatis</b><p>SAKU akan memasukkan rekomendasi batas bulanan dan dana minimum ke setiap wallet. Semua field tetap bisa kamu edit.</p><button class="btn secondary sm" data-action="auto-budget-wallets">Terapkan Rekomendasi SAKU</button></div><p class="helper" style="margin:9px 1px 0">Batas total adalah guardrail utama. Walaupun jumlah batas per wallet lebih besar, AI tetap menjaga agar total pengeluaran tidak melewati angka ini.</p></div>
+      <div class="section-title"><b>Budget per wallet</b><span class="badge blue">Reset tiap tanggal 1</span></div>
+      ${state.walletOrder.map(name=>{const w=state.wallets[name],pct=budgetPct(name),status=budgetStatus(name),limitRec=recommendedWalletBudget(name),reserveRec=recommendedReserve(name),recRemaining=Math.max(0,limitRec-(w.spentThisMonth||0));return `<div class="budget-wallet"><div class="budget-wallet-head"><div class="budget-wallet-logo" style="background:${w.color}">${w.letter}</div><div><b>${name}</b><p>${w.type} · saldo saat ini ${money(w.balance)}</p></div><strong>${pct}%</strong></div><div class="budget-progress ${status==='warn'?'warn':status==='over'?'over':''}"><span style="width:${Math.min(100,pct)}%"></span></div><div class="budget-meta"><span>Sudah terpakai bulan ini <b>${money(w.spentThisMonth||0)}</b></span><span>Masih boleh dipakai <b>${money(budgetRemaining(name))}</b></span></div><div class="budget-input-row"><div class="budget-field"><label>Batas total bulan ini</label><input inputmode="numeric" autocomplete="off" data-money-input data-budget-limit="${name}" value="${Number(w.monthlyLimit||0).toLocaleString('id-ID')}"><div class="budget-recommendation">${icon('i-spark','sm')}<span>Rekomendasi <b>${money(limitRec)}</b> sudah termasuk ${money(w.spentThisMonth||0)} yang terpakai. Sisa pemakaian yang disarankan <b>${money(recRemaining)}</b>.</span></div></div><div class="budget-field"><label>Dana minimum jangan dipakai</label><input inputmode="numeric" autocomplete="off" data-money-input data-budget-reserve="${name}" value="${Number(w.reserve||0).toLocaleString('id-ID')}"><div class="budget-recommendation">${icon('i-shield','sm')}<span>Jaga minimal <b>${money(reserveRec)}</b> agar saldo aman tetap tersedia.</span></div></div></div></div>`}).join('')}
+      <div class="section-title"><b>Cara AI menggunakan budget</b></div><div class="card"><div class="budget-rule"><div class="dot">1</div><div><b>Cek saldo dan batas bulanan</b><span>AI memastikan sumber dana cukup dan tidak membuat pengeluaran melewati target yang kamu tetapkan.</span></div></div><div class="budget-rule"><div class="dot">2</div><div><b>Alihkan ke wallet yang lebih sehat</b><span>Jika BCA sudah melewati Rp1 juta, AI akan memprioritaskan GoPay, OVO, atau DANA yang masih punya sisa budget.</span></div></div><div class="budget-rule"><div class="dot">3</div><div><b>Tetap mempertimbangkan promo</b><span>Wallet terbaik adalah kombinasi budget aman, saldo cukup, dan benefit paling tinggi.</span></div></div><div class="budget-rule"><div class="dot">4</div><div><b>Minta konfirmasi jika semua budget habis</b><span>AI tidak memblokir secara diam-diam. Kamu tetap bisa lanjut setelah melihat risiko dan memilih override.</span></div></div></div>
+      <div class="sticky-actions"><button class="btn primary" data-action="save-budget">Simpan Budget Bulanan</button><button class="btn ghost" style="margin-top:8px" data-action="simulate-bca-over">Simulasikan BCA melewati batas</button></div></section>`;
+    },
+
+    'budget-success': () => `<section class="screen">${topbar('Budget Aktif','AI siap menjaga pengeluaran')}
+      <div class="budget-success-hero"><div class="success-check" style="width:78px;height:78px;border-radius:26px;margin:8px auto 0">${icon('i-check','xl')}</div><h1>Money plan berhasil dibuat.</h1><p>SAKU sekarang mempertimbangkan batas total, budget per wallet, dana minimum, dan promo setiap kali memberi rekomendasi pembayaran.</p></div>
+      <div class="budget-summary" style="margin-top:16px"><small>TOTAL BUDGET BULAN INI</small><h2>${money(state.totalMonthlyLimit)}</h2><p>${money(overallBudgetRemaining())} masih tersedia dari seluruh akun tertaut.</p><div class="budget-kpis"><div class="budget-kpi"><span>Terpakai</span><b>${money(totalMonthlySpent())}</b></div><div class="budget-kpi"><span>Sisa</span><b>${money(overallBudgetRemaining())}</b></div><div class="budget-kpi"><span>Peringatan</span><b>80%</b></div></div></div>
+      <div class="section-title"><b>Ringkasan per wallet</b><span class="badge green">Aktif</span></div><div class="budget-success-list">${state.walletOrder.map(name=>{const w=state.wallets[name];return `<div class="budget-success-item"><div class="wallet-logo" style="--wallet-color:${w.color}">${w.letter}</div><div><b>${name}</b><span>Terpakai ${money(w.spentThisMonth||0)} · sisa ${money(budgetRemaining(name))}</span></div><strong>${money(w.monthlyLimit||0)}</strong></div>`}).join('')}</div>
+      <div class="card" style="margin-top:11px"><div class="factor-row"><div class="factor-icon" style="background:var(--blue-soft);color:var(--blue)">${icon('i-spark','sm')}</div><div><b>Contoh perilaku AI</b><span>Jika BCA melewati Rp1.000.000, transaksi jajan berikutnya akan diarahkan ke wallet lain yang masih memiliki budget.</span></div></div></div>
+      <div class="sticky-actions"><button class="btn success" data-route="home">Lihat Dashboard</button><button class="btn ghost" style="margin-top:8px" data-action="simulate-bca-over">Demo BCA Melewati Batas</button></div>
+    </section>`,
+
+    assistant: () => `<section class="chat-screen">
+      <div class="chat-head">${logo()}<div class="grow"><b>AI Assistant SAKU</b><div class="online">● Online · data terakhir 2 menit lalu</div></div><button class="icon-btn" data-action="investor-lens">${icon('i-info')}</button></div>
+      <div class="chat-body" id="chatBody">
+        ${state.messages.map(m=>`<div class="message ${m.from}">${m.text}<small>${m.from==='ai'?'SAKU · berdasarkan data kamu':'Baru saja'}</small></div>`).join('')}
+        <div class="chat-card"><span class="badge blue">Contoh pertanyaan</span><p>“Pakai apa untuk bayar GoFood Rp85 ribu?”<br>“Saya mampu beli iPhone Rp15 juta?”<br>“Kenapa pengeluaran saya naik?”</p></div>
+      </div>
+      <div class="chat-composer"><div class="chat-chips"><button class="chat-chip" data-quick="Pakai apa untuk bayar GoFood Rp85 ribu?">Bayar GoFood</button><button class="chat-chip" data-quick="Saya mampu beli laptop 8 juta?">Mampu beli?</button><button class="chat-chip" data-quick="Saya boros gak bulan ini?">Cek pengeluaran</button></div><div class="composer-row"><input class="composer-input" id="chatInput" placeholder="Tanya tentang keputusan keuanganmu..."><button class="send-btn" data-action="send-chat">${icon('i-send')}</button></div></div>
+    </section>`,
+
+    'payment-advisor': () => `<section class="screen">${topbar('Payment Advisor','Rekomendasi real-time',investorButton())}
+      <div class="advisor-title-card"><small>CORE WEDGE · FINANCIAL DECISION</small><h2>Bayar pakai apa biar paling untung?</h2><p>SAKU menghitung benefit bersih, eligibility, biaya, preferensi, dan promo aktif.</p></div>
+      <div class="section-title"><b>1. Pilih merchant</b><button data-action="custom-merchant">Merchant lain</button></div>
+      <div class="merchant-select">${merchantChip('GoFood','🍜','#ef4c43')}${merchantChip('GrabFood','🥡','#17a866')}${merchantChip('ShopeeFood','🍱','#f2662f')}${merchantChip('Tokopedia','🛍️','#11a66a')}${merchantChip('Traveloka','✈️','#3979e8')}</div>
+      <div class="section-title"><b>2. Masukkan nominal</b><span class="helper">Opsional untuk promo tertentu</span></div>
+      <div class="amount-input"><span>Rp</span><input id="amountInput" inputmode="numeric" value="${state.amount.toLocaleString('id-ID')}"></div>
+      <div class="chip-row" style="margin-top:9px"><button class="chip" data-amount="50000">50rb</button><button class="chip active" data-amount="85000">85rb</button><button class="chip" data-amount="100000">100rb</button><button class="chip" data-amount="150000">150rb</button></div>
+      <div class="section-title"><b>Yang akan dihitung</b></div>
+      <div class="card"><div class="factor-row"><div class="factor-icon" style="background:var(--green-soft);color:var(--green)">%</div><div><b>Cashback & diskon bersih</b><span>Memperhitungkan cap, minimum transaksi, dan biaya.</span></div><span class="badge green" style="margin-left:auto">Live</span></div><div class="factor-row"><div class="factor-icon" style="background:var(--purple-soft);color:var(--purple)">★</div><div><b>Poin & reward</b><span>Dikonversi ke estimasi nilai rupiah.</span></div></div><div class="factor-row"><div class="factor-icon" style="background:var(--orange-soft);color:var(--orange)">${icon('i-shield','sm')}</div><div><b>Eligibility promo</b><span>Status akun, kuota, periode, kategori, dan membership.</span></div></div><div class="factor-row"><div class="factor-icon" style="background:var(--blue-soft);color:var(--blue)">${icon('i-user','sm')}</div><div><b>Kondisi & preferensi pengguna</b><span>Saldo tersedia, metode aktif, dan preferensi pembayaran.</span></div></div></div>
+      <div class="sticky-actions"><button class="btn primary" data-action="calculate-recommendation">Cari Rekomendasi Terbaik ${icon('i-spark','sm')}</button></div>
+    </section>`,
+
+    'recommend-loading': () => `<section class="screen">${topbar('Mencari Rekomendasi','AI orchestration')}
+      <div class="loading-reco"><div class="ai-orb">${icon('i-spark','xl')}</div><h1 class="page-title" style="font-size:23px">Membandingkan 12 opsi pembayaran...</h1><p class="page-sub">SAKU sedang memeriksa benefit bersih dan eligibility promo yang masih aktif.</p><div class="engine-steps"><div class="engine-step done">${icon('i-check','sm')} Intent & merchant berhasil dipahami</div><div class="engine-step done">${icon('i-check','sm')} Promo partner terbaru ditemukan</div><div class="engine-step done">${icon('i-check','sm')} Eligibility user divalidasi</div><div class="engine-step">${icon('i-clock','sm')} Mengurutkan benefit bersih</div></div></div>
+    </section>`,
+
+    'payment-result': () => `<section class="screen">${topbar('Rekomendasi SAKU','Untuk ${state.demoMerchant} · ${money(state.amount)}',investorButton())}
+      <div class="result-hero"><div class="result-label">Pilihan paling menguntungkan</div><div class="result-method"><div class="payment-logo" style="background:#10a46a">G</div><div><h2>GoPay</h2><p>Cashback langsung · eligible</p></div></div><div class="result-saving"><div><span>Total benefit bersih</span><strong>Rp15.000</strong></div><span class="badge green">Hemat 17,6%</span></div><div class="confidence"><span class="helper">Confidence score</span><div class="progress"><span style="width:96%;background:var(--green)"></span></div><small>96%</small></div></div>
+      <div class="transparent-box" style="margin-top:10px"><b>Kenapa ini #1?</b> Promo GoPay memberi benefit bersih tertinggi, semua syarat terpenuhi, tidak ada biaya tambahan, dan saldo mencukupi.</div>
+      <div class="section-title"><b>Ranking metode pembayaran</b><button data-route="payment-detail">Cara menghitung</button></div>
+      <div class="method-list">
+        ${method('G','#10a46a','GoPay','Cashback 20% · maks Rp15rb','Rp15.000','winner','Terbaik')}
+        ${method('S','#ef5d2f','ShopeePay','10.000 koin · partner campaign','Rp10.000','','Sponsored · #2')}
+        ${method('O','#5e3ca6','OVO','Cashback 8% · maks Rp8rb','Rp6.800','','Eligible')}
+        ${method('B','#185bb8','BCA Credit Card','Diskon 10% khusus Jumat','Rp0','','Tidak eligible')}
+      </div>
+      <div class="card" style="margin-top:11px"><div class="row between"><div><b style="font-size:10.5px">Promo masih aktif</b><p class="helper" style="margin:3px 0 0">Diperbarui 4 menit lalu · kuota tersedia</p></div><span class="badge green">Terverifikasi</span></div></div>
+      <div class="sticky-actions"><button class="btn success" data-action="use-payment">Gunakan GoPay · Hemat Rp15.000</button><button class="btn ghost" style="margin-top:8px" data-route="payment-detail">Lihat Detail & Syarat</button></div>
+    </section>`,
+
+    'payment-detail': () => `<section class="screen">${topbar('Mengapa GoPay?','Explainable recommendation')}
+      <div class="card"><div class="row"><div class="payment-logo" style="background:#10a46a">G</div><div class="grow"><span class="badge green">Peringkat #1</span><h2 style="font-size:18px;margin:5px 0 2px">GoPay Cashback</h2><span class="helper">Benefit bersih ${money(15000)}</span></div></div></div>
+      <div class="section-title"><b>Perhitungan benefit</b></div>
+      <div class="card term-list"><div class="term"><span>Nilai transaksi</span><b>${money(state.amount)}</b></div><div class="term"><span>Cashback 20%</span><b>${money(Math.round(state.amount*.2))}</b></div><div class="term"><span>Batas maksimum cashback</span><b>Rp15.000</b></div><div class="term"><span>Biaya pembayaran</span><b>Rp0</b></div><div class="term"><span>Benefit bersih</span><b style="color:var(--green)">Rp15.000</b></div></div>
+      <div class="section-title"><b>Eligibility check</b></div>
+      <div class="card"><div class="factor-row"><div class="factor-icon" style="background:var(--green-soft);color:var(--green)">${icon('i-check','sm')}</div><div><b>Minimum transaksi Rp50.000</b><span>Transaksimu ${money(state.amount)}</span></div></div><div class="factor-row"><div class="factor-icon" style="background:var(--green-soft);color:var(--green)">${icon('i-check','sm')}</div><div><b>Kuota cashback tersedia</b><span>Estimasi sisa kuota masih tersedia</span></div></div><div class="factor-row"><div class="factor-icon" style="background:var(--green-soft);color:var(--green)">${icon('i-check','sm')}</div><div><b>Akun dan saldo aktif</b><span>Saldo mencukupi untuk transaksi</span></div></div></div>
+      <div class="section-title"><b>Bobot ranking</b></div>
+      <div class="score-grid"><div class="score-card"><span>Benefit bersih</span><b>60%</b></div><div class="score-card"><span>Eligibility</span><b>20%</b></div><div class="score-card"><span>Preferensi user</span><b>10%</b></div><div class="score-card"><span>Availability</span><b>10%</b></div></div>
+      <div class="transparent-box" style="margin-top:11px"><b>Transparansi monetisasi:</b> ShopeePay merupakan partner campaign pada demo ini, tetapi tetap berada di peringkat #2 karena benefit bersihnya lebih rendah. Partnership tidak mengubah ranking.</div>
+      <div class="sticky-actions"><button class="btn success" data-action="use-payment">Gunakan GoPay</button></div>
+    </section>`,
+
+    'payment-handoff': () => `<section class="screen">${topbar('Selesaikan Pembayaran','Partner handoff')}
+      <div style="text-align:center;padding:15px 5px"><div class="payment-logo" style="background:#10a46a;width:76px;height:76px;border-radius:25px;margin:0 auto 15px;font-size:26px">G</div><h1 class="page-title" style="font-size:24px">Buka GoPay untuk membayar</h1><p class="page-sub">Kami akan mencatat klik rekomendasi. Setelah transaksi selesai, SAKU akan mencocokkan transaksi dan menambahkan penghematanmu.</p></div>
+      <div class="card"><div class="receipt-row"><span>Merchant</span><strong>${state.demoMerchant}</strong></div><div class="receipt-row"><span>Nominal</span><strong>${money(state.amount)}</strong></div><div class="receipt-row"><span>Metode</span><strong>GoPay</strong></div><div class="receipt-row"><span>Estimasi cashback</span><strong class="green">Rp15.000</strong></div></div>
+      <div class="event-pipeline"><small>Attribution pipeline</small><div class="event-flow"><div class="event done">✓ Click</div><span class="event-arrow">→</span><div class="event">Transaction</div><span class="event-arrow">→</span><div class="event">Success</div></div></div>
+      <div class="consent-note">Dalam implementasi nyata, mekanisme dapat berupa deep link, QRIS mediated, referral code, atau partner callback sesuai integrasi.</div>
+      <div class="sticky-actions"><button class="btn primary" data-action="simulate-pay">Simulasikan Pembayaran Berhasil</button><button class="btn ghost" style="margin-top:8px" data-action="back">Kembali</button></div>
+    </section>`,
+
+    'transaction-success': () => `<section class="success-screen"><div class="success-check">${icon('i-check','xl')}</div><h1>Transaksi berhasil 🎉</h1><p>SAKU berhasil mencocokkan rekomendasi dengan transaksi dan mencatat penghematanmu.</p><div class="receipt"><div class="receipt-row"><span>Merchant</span><strong>GoFood</strong></div><div class="receipt-row"><span>Total transaksi</span><strong>${money(state.amount)}</strong></div><div class="receipt-row"><span>Metode pembayaran</span><strong>GoPay</strong></div><div class="receipt-row"><span>Penghematan</span><strong class="green">+ Rp15.000</strong></div><div class="receipt-row"><span>Total hemat bersama SAKU</span><strong>${money(state.savings)}</strong></div></div><div class="event-pipeline"><small>Business attribution · demo</small><div class="event-flow"><div class="event done">✓ Click</div><span class="event-arrow">→</span><div class="event done">✓ Transaction</div><span class="event-arrow">→</span><div class="event done">✓ Success</div></div><div style="font-size:8.5px;color:#a9bce1;margin-top:10px">Eligible revenue event: partner / affiliate attribution · estimasi demo Rp1.500</div></div><div style="margin-top:auto"><button class="btn success" data-route="home">Kembali ke Beranda</button><button class="btn ghost" style="margin-top:8px" data-action="investor-lens">Lihat Business Logic</button></div></section>`,
+
+    affordability: () => `<section class="screen">${topbar('Can I Afford This?','Decision query',investorButton())}
+      <div class="afford-hero"><div class="row"><div class="purchase-icon">${icon('i-cart','lg')}</div><div><span class="badge orange">Before checkout</span><h2>Apakah saya mampu beli ini?</h2></div></div><p>SAKU menilai dampak pembelian terhadap cashflow, tagihan tetap, dana aman, dan budget kategori.</p></div>
+      <div class="input-wrap"><label class="input-label">Nama barang / kebutuhan</label><input class="input" value="Laptop kerja" id="purchaseName"></div>
+      <div class="input-wrap"><label class="input-label">Harga</label><div class="amount-input"><span>Rp</span><input value="8.000.000" id="purchaseAmount"></div></div>
+      <div class="input-wrap"><label class="input-label">Cara membayar</label><div class="chip-row"><button class="chip active">Tunai / debit</button><button class="chip">Kartu kredit</button><button class="chip">PayLater</button><button class="chip">Cicilan 12 bulan</button></div></div>
+      <div class="section-title"><b>Data yang dipertimbangkan</b></div>
+      <div class="card"><div class="factor-row"><div class="factor-icon" style="background:var(--blue-soft);color:var(--blue)">${icon('i-wallet','sm')}</div><div><b>Saldo & cashflow</b><span>Saldo tertaut, pemasukan, pengeluaran, dan tagihan.</span></div></div><div class="factor-row"><div class="factor-icon" style="background:var(--green-soft);color:var(--green)">${icon('i-shield','sm')}</div><div><b>Dana aman minimum</b><span>Buffer untuk kebutuhan wajib dan situasi tak terduga.</span></div></div><div class="factor-row"><div class="factor-icon" style="background:var(--orange-soft);color:var(--orange)">${icon('i-chart','sm')}</div><div><b>Dampak 30 hari ke depan</b><span>Proyeksi sisa uang setelah pembelian.</span></div></div></div>
+      <div class="sticky-actions"><button class="btn primary" data-route="affordability-result">Analisis Kemampuan Beli</button></div>
+    </section>`,
+
+    'affordability-result': () => `<section class="screen">${topbar('Hasil Analisis','Laptop kerja · Rp8.000.000')}
+      <div class="afford-result"><div class="afford-status"><div class="status-icon">${icon('i-check','lg')}</div><div><span class="badge green">Cukup aman, dengan catatan</span><h2>Kamu mampu membeli ini.</h2><p>Namun, pembelian tunai akan menurunkan buffer kas ke batas minimum.</p></div></div><div class="divider"></div><div class="row between"><div><span class="helper">Affordability score</span><div style="font-size:28px;font-weight:900;color:var(--green)">74/100</div></div><div style="text-align:right"><span class="helper">Sisa kas setelah beli</span><div style="font-size:16px;font-weight:900">Rp4.840.500</div></div></div></div>
+      <div class="section-title"><b>Dampak cashflow 4 minggu</b><span class="badge orange">Proyeksi</span></div>
+      <div class="card"><div class="impact-chart"><div class="bar current" style="height:90%"><span>Sekarang</span></div><div class="bar after" style="height:38%"><span>Setelah beli</span></div><div class="bar" style="height:45%"><span>Minggu 2</span></div><div class="bar" style="height:53%"><span>Minggu 3</span></div><div class="bar" style="height:68%"><span>Gajian</span></div></div><div class="row between"><span class="helper">Buffer minimum disarankan</span><b style="font-size:10px">Rp4.500.000</b></div></div>
+      <div class="section-title"><b>Saran SAKU</b></div>
+      <div class="recommendation-note"><div class="ri">${icon('i-spark')}</div><div><b>Pilihan yang lebih sehat</b><p>Tunda 14 hari atau gunakan cicilan 6 bulan tanpa bunga. Dengan begitu buffer kas tetap di atas Rp8 juta.</p></div></div>
+      <div class="card" style="margin-top:9px"><div class="row between"><div><b style="font-size:10.5px">Alternatif cicilan 6 bulan</b><p class="helper" style="margin:3px 0 0">Estimasi Rp1,33 juta/bulan · tanpa bunga</p></div><span class="badge green">Lebih aman</span></div></div>
+      <p class="helper" style="margin:12px 2px">Hasil merupakan decision support berdasarkan data tersedia, bukan nasihat keuangan profesional dan bukan jaminan kondisi masa depan.</p>
+      <div class="sticky-actions"><button class="btn primary" data-route="assistant">Diskusikan dengan SAKU</button><button class="btn ghost" style="margin-top:8px" data-route="home">Simpan Analisis</button></div>
+    </section>`,
+
+    insight: () => `<section class="screen"><div class="top-appbar"><div><div class="top-title" style="font-size:20px">Insight Keuangan</div><div class="top-subtitle">Diperbarui hari ini</div></div><button class="icon-btn" data-action="investor-lens">${icon('i-info')}</button></div>
+      ${!state.transactions.length?emptyState('i-chart','Insight belum tersedia','Setelah akun terhubung dan ada aktivitas, SAKU akan menyusun tren, kategori, dan saran yang relevan.','add-account',hasAccounts()?'Tambah akun lain':'Hubungkan akun pertama'):`
+      <div class="health-score"><div><span class="badge green" style="background:rgba(77,222,147,.14);color:#7ce7ae">Financial health</span><h2>Kondisimu cukup sehat</h2><p>Pengeluaran terkendali, tetapi budget makan dan hiburan perlu diperhatikan.</p></div><div class="score-ring"><strong>76</strong><span>dari 100</span></div></div>
+      <div class="section-title"><b>Pengeluaran bulan ini</b><span class="badge red">+8% vs bulan lalu</span></div>
+      <div class="card"><div class="row between"><div><span class="helper">Total pengeluaran</span><div style="font-size:24px;font-weight:900;margin-top:3px">Rp4.287.500</div></div><span class="badge blue">68% budget</span></div><div class="trend-chart"><div class="trend-col"><div class="trend-bar" style="height:42%"></div><span>Jan</span></div><div class="trend-col"><div class="trend-bar" style="height:60%"></div><span>Feb</span></div><div class="trend-col"><div class="trend-bar" style="height:55%"></div><span>Mar</span></div><div class="trend-col"><div class="trend-bar" style="height:67%"></div><span>Apr</span></div><div class="trend-col"><div class="trend-bar" style="height:71%"></div><span>Mei</span></div><div class="trend-col active"><div class="trend-bar" style="height:80%"></div><span>Jun</span></div></div></div>
+      <div class="section-title"><b>Kategori terbesar</b><button data-route="assistant">Tanya AI</button></div>
+      <div class="card category-list"><div class="category"><div class="category-icon" style="background:var(--orange-soft)">🍜</div><div><b>Makan & Food Delivery</b><p>78% dari budget kategori</p><div class="progress"><span style="width:78%;background:var(--orange)"></span></div></div><div class="category-amount"><b>Rp1,48 jt</b><span>+18%</span></div></div><div class="category"><div class="category-icon" style="background:var(--blue-soft)">🚕</div><div><b>Transportasi</b><p>52% dari budget kategori</p><div class="progress"><span style="width:52%;background:var(--blue)"></span></div></div><div class="category-amount"><b>Rp780 rb</b><span style="color:var(--green)">-4%</span></div></div><div class="category"><div class="category-icon" style="background:var(--purple-soft)">🎬</div><div><b>Hiburan</b><p>85% dari budget kategori</p><div class="progress"><span style="width:85%;background:var(--purple)"></span></div></div><div class="category-amount"><b>Rp640 rb</b><span>+12%</span></div></div></div>
+      <div class="section-title"><b>Rekomendasi proaktif</b></div><div class="recommendation-note"><div class="ri">${icon('i-spark')}</div><div><b>Batasi food delivery maksimal 2× minggu ini</b><p>Potensi penghematan Rp112.000 tanpa mengubah budget kebutuhan wajib.</p><button class="text-link" style="margin-top:7px" data-route="assistant">Buat rencana hemat →</button></div></div>`}
+    </section>`,
+
+    rewards: () => `<section class="screen"><div class="top-appbar"><div><div class="top-title" style="font-size:20px">Reward & Referral</div><div class="top-subtitle">Nilai tambah dari kebiasaan baik</div></div><button class="icon-btn" data-action="investor-lens">${icon('i-info')}</button></div>
+      <div class="reward-hero"><small>SALDO SAKU POINT</small><div class="points">${state.points.toLocaleString('id-ID')} XP</div><p>260 XP lagi untuk unlock voucher Rp25.000</p><div class="reward-progress"><span></span></div></div>
+      <div class="section-title"><b>Cara mendapatkan poin</b></div><div class="quick-actions"><div class="quick"><div class="qicon" style="background:var(--green-soft);color:var(--green)">${icon('i-link')}</div><b>Link akun</b><span>+200 XP</span></div><div class="quick"><div class="qicon" style="background:var(--blue-soft);color:var(--blue)">${icon('i-wallet')}</div><b>Pakai saran</b><span>+20 XP</span></div><div class="quick"><div class="qicon" style="background:var(--purple-soft);color:var(--purple)">${icon('i-user')}</div><b>Ajak teman</b><span>+300 XP</span></div></div>
+      <div class="section-title"><b>Redeem pilihan</b><button>Lihat semua</button></div><div class="voucher-grid"><div class="voucher"><div class="voucher-logo" style="background:#e93b40">I</div><b>Voucher Indomaret</b><p>Rp25.000 · 1.500 XP</p><button>Redeem</button></div><div class="voucher"><div class="voucher-logo" style="background:#0aa66a">G</div><b>Saldo GoPay</b><p>Rp20.000 · 1.300 XP</p><button>Redeem</button></div><div class="voucher"><div class="voucher-logo" style="background:#f2662f">S</div><b>Shopee Voucher</b><p>Rp20.000 · 1.250 XP</p><button>Redeem</button></div><div class="voucher"><div class="voucher-logo" style="background:#2d66bf">P</div><b>Pulsa Digital</b><p>Rp25.000 · 1.400 XP</p><button>Redeem</button></div></div>
+      <div class="section-title"><b>Ajak teman, tumbuh bersama</b></div><div class="referral-card"><div class="row"><div class="menu-icon" style="background:var(--orange-soft);color:var(--orange)">${icon('i-gift')}</div><div><b style="font-size:11px">Dapatkan 300 XP</b><p class="helper" style="margin:3px 0 0">Reward cair setelah teman menautkan akun dan menggunakan rekomendasi pertama.</p></div></div><div class="ref-code"><b>SAKU-TIM24</b><button data-action="copy-code">${icon('i-copy','sm')} Salin</button></div><button class="btn primary sm" style="width:100%">Bagikan Link Referral</button></div>
+    </section>`,
+
+    profile: () => `<section class="screen"><div class="top-appbar"><div><div class="top-title" style="font-size:20px">Profil & Keamanan</div><div class="top-subtitle">Kontrol akun dan data</div></div><button class="icon-btn">${icon('i-settings')}</button></div>
+      <div class="card profile-card"><div class="profile-avatar">T</div><h2>${state.name}</h2><p>+62 ${state.phone} · Akun terverifikasi</p><div class="chip-row" style="justify-content:center;margin-top:9px"><span class="badge green">${state.walletOrder.length} akun tertaut</span><span class="badge blue">${hasAccounts()?'Level Optimizer':'Pengguna baru'}</span></div></div>
+      <div class="section-title"><b>Perencanaan uang</b></div><div class="menu-list"><button class="menu-item" data-route="budget-setup"><div class="menu-icon" style="background:var(--blue-soft);color:var(--blue)">${icon('i-target')}</div><div><b>Budget Bulanan & Dana Aman</b><span>Atur batas total dan batas per wallet</span></div>${icon('i-chevron','sm chev')}</button></div><div class="section-title"><b>Data & keamanan</b></div><div class="menu-list"><button class="menu-item" data-route="consent"><div class="menu-icon" style="background:var(--green-soft);color:var(--green)">${icon('i-shield')}</div><div><b>Consent Center</b><span>Lihat izin data dan cabut akses</span></div>${icon('i-chevron','sm chev')}</button><button class="menu-item" data-route="accounts"><div class="menu-icon">${icon('i-link')}</div><div><b>Akun Tersambung</b><span>${state.walletOrder.length} akun aktif · tambah atau kelola</span></div>${icon('i-chevron','sm chev')}</button><button class="menu-item"><div class="menu-icon" style="background:var(--purple-soft);color:var(--purple)">${icon('i-lock')}</div><div><b>PIN & Biometrik</b><span>Ubah PIN atau aktifkan Face ID</span></div>${icon('i-chevron','sm chev')}</button><button class="menu-item"><div class="menu-icon" style="background:var(--orange-soft);color:var(--orange)">${icon('i-bell')}</div><div><b>Preferensi Notifikasi</b><span>Atur reminder dan proactive nudge</span></div>${icon('i-chevron','sm chev')}</button></div>
+      <div class="section-title"><b>Transparansi</b></div><div class="menu-list"><button class="menu-item" data-action="investor-lens"><div class="menu-icon" style="background:var(--blue-soft);color:var(--blue)">${icon('i-info')}</div><div><b>Mengapa SAKU merekomendasikan?</b><span>Pelajari ranking, sponsorship, dan data</span></div>${icon('i-chevron','sm chev')}</button><button class="menu-item"><div class="menu-icon" style="background:var(--red-soft);color:var(--red)">${icon('i-logout')}</div><div><b>Keluar dari SAKU</b><span>Sesi ini akan diakhiri</span></div>${icon('i-chevron','sm chev')}</button></div>
+    </section>`,
+
+    consent: () => `<section class="screen">${topbar('Consent Center','Transparansi & kontrol')}
+      <div class="card"><div class="row"><div class="trust-shield" style="width:56px;height:56px;border-radius:19px;margin:0">${icon('i-shield','lg')}</div><div><span class="badge green">Akses aktif</span><h2 style="font-size:16px;margin:5px 0 2px">GoPay via Demo Aggregator</h2><p class="helper" style="margin:0">Diberikan 10 Jul 2026 · dapat dicabut kapan saja</p></div></div></div>
+      <div class="section-title"><b>Data yang diizinkan</b><span class="helper">Ubah kapan saja</span></div>
+      <div class="permission" data-permission="balance"><div class="pi">${icon('i-wallet')}</div><div class="grow"><b>Membaca saldo</b><p>Untuk kemampuan beli dan safe-to-spend.</p></div><button class="switch ${state.permissions.balance?'on':''}" data-toggle="balance"><span></span></button></div>
+      <div class="permission" style="margin-top:8px" data-permission="transactions"><div class="pi">${icon('i-chart')}</div><div class="grow"><b>Riwayat transaksi</b><p>Untuk insight, categorization, dan rekomendasi.</p></div><button class="switch ${state.permissions.transactions?'on':''}" data-toggle="transactions"><span></span></button></div>
+      <div class="permission" style="margin-top:8px" data-permission="merchant"><div class="pi">${icon('i-cart')}</div><div class="grow"><b>Nama merchant & kategori</b><p>Untuk matching promo dan attribution.</p></div><button class="switch ${state.permissions.merchant?'on':''}" data-toggle="merchant"><span></span></button></div>
+      <div class="permission" style="margin-top:8px"><div class="pi" style="background:var(--orange-soft);color:var(--orange)">${icon('i-bell')}</div><div class="grow"><b>Personalisasi marketing</b><p>Untuk campaign dan penawaran partner.</p></div><button class="switch ${state.permissions.marketing?'on':''}" data-toggle="marketing"><span></span></button></div>
+      <div class="section-title"><b>Yang tidak pernah diizinkan</b></div><div class="card"><div class="factor-row"><div class="factor-icon" style="background:var(--red-soft);color:var(--red)">×</div><div><b>Transfer atau penarikan uang</b><span>SAKU tidak memiliki payment initiation permission.</span></div></div><div class="factor-row"><div class="factor-icon" style="background:var(--red-soft);color:var(--red)">×</div><div><b>Password, PIN, atau OTP bank</b><span>Tidak dibaca dan tidak disimpan oleh SAKU.</span></div></div></div>
+      <div class="section-title"><b>Audit aktivitas data</b></div><div class="card"><div class="audit-item"><span class="audit-dot"></span><div><b>Saldo digunakan untuk safe-to-spend</b><p>Hari ini, 09:42 · AI Decision Engine</p></div></div><div class="audit-item"><span class="audit-dot"></span><div><b>Transaksi digunakan untuk insight bulanan</b><p>Hari ini, 09:40 · Analytics Engine</p></div></div><div class="audit-item"><span class="audit-dot"></span><div><b>Merchant digunakan untuk matching promo</b><p>Kemarin, 18:22 · Recommendation Engine</p></div></div></div>
+      <button class="btn ghost" style="margin-top:12px;color:var(--red)" data-action="revoke-access">Cabut Seluruh Akses GoPay</button>
+    </section>`
+  };
+
+  function source(name,color,letter,sub){const connected=state.linked.includes(name);return `<button class="source ${state.selectedSource===name&&!connected?'selected':''} ${connected?'connected':''}" ${connected?'disabled':''} data-source="${name}"><span class="source-logo" style="background:${color}">${letter}</span><span><b>${name}</b><span>${sub}</span></span></button>`;}
+  function merchantChip(name,emoji,color){return `<button class="merchant-chip ${state.demoMerchant===name?'selected':''}" data-merchant="${name}"><span class="micon" style="background:${color}">${emoji}</span><b>${name}</b></button>`;}
+  function method(letter,color,name,desc,save,extra,badge){return `<div class="method ${extra}"><div class="payment-logo" style="background:${color}">${letter}</div><div><div class="row" style="gap:5px"><b>${name}</b>${badge.includes('Sponsored')?'<span class="badge purple">Sponsored</span>':''}</div><p>${desc}</p><span class="badge ${badge.includes('Tidak')?'red':badge.includes('Terbaik')?'green':'blue'}">${badge}</span></div><div class="method-save"><b>${save}</b><span>benefit</span></div></div>`;}
+
+  function investorLensContent(){
+    const map = {
+      splash:['Investor Lens','Category positioning','SAKU memindahkan PFM dari “tracking masa lalu” menjadi “decision support sebelum transaksi”.','Wedge','Payment Advisor netral: manfaat instan, frekuensi tinggi, dan sulit ditiru super-app yang memiliki konflik kepentingan.','Risk','User belum tentu membuka aplikasi sebelum membayar. Perlu Concierge MVP dan eksperimen trigger.'],
+      demo:['Value-first acquisition','Problem','User membuka banyak aplikasi, membaca syarat panjang, dan tetap tidak yakin promo masih aktif.','Experiment','Demo vs no-demo untuk mengukur peningkatan register dan account-link intent.','Metric','Rupiah yang terbukti dihemat per active user.'],
+      trust:['Trust gateway','Critical assumption','User percaya startup membaca transaksi dan memahami istilah akses hanya-baca.','Design response','Explain purpose, show forbidden permissions, progressive linking, granular consent, dan revoke access.','Experiment','Trust screen vs no trust screen; comprehension test untuk bahasa read-only.'],
+      accounts:['Progressive account aggregation','User value','User dapat menambah dan mengelola bank/e-wallet kapan saja setelah onboarding.','AI impact','Setiap akun baru menambah visibility saldo, budget capacity, dan pilihan metode pembayaran.','Trust','Per-account permission, sync status, dan revoke access harus selalu terlihat.'],
+      'account-added':['New data source activated','Product loop','Add account → authorization → sync → dashboard balance → budget setup.','Activation','Akun baru langsung menghasilkan value melalui saldo dan rekomendasi budget awal.','Metric','Account linking completion, sync success, dan multi-account depth.'],
+      'budget-intro':['Smart money guardrail','User intent','User menentukan berapa uang yang boleh dipakai dari seluruh saldo dan dari masing-masing wallet.','AI behavior','Budget menjadi constraint sebelum promo dan benefit dinilai.','Outcome','Mengurangi overspending tanpa memblokir kontrol pengguna.'],
+      'budget-setup':['Monthly budget control','Data model','Total monthly cap, wallet cap, protected balance, spent-to-date, dan threshold 80/100%.','Recommendation logic','Wallet yang melewati limit diturunkan prioritasnya; wallet yang masih sehat diprioritaskan.','Trust','User dapat override setelah melihat dampak.'],
+      'budget-success':['Guardrail activated','Product loop','Linked account → budget setup → QR scan → AI recommendation → budget update.','Retention','Peringatan 80% dan rerouting 100% menciptakan proactive value.','Metric','Budget adherence, alert response, recommendation acceptance, dan avoided overspend.'],
+      'qr-scan':['QR payment entry point','Behavioral trigger','User tidak perlu membuka banyak aplikasi. Scan QR menjadi satu entry point sebelum transaksi.','AI decision','Setelah merchant dan nominal terbaca, sistem memilih sumber dana yang cukup, aman, dan paling menguntungkan.','Product value','Payment Advisor berubah dari fitur konsultasi menjadi actual transaction flow.'],
+      'qr-recommendation':['Real-time payment orchestration','Data inputs','Saldo per akun, buffer aman, promo, fee, merchant, dan eligibility diproses bersamaan.','Decision rule','Kelayakan saldo adalah gate pertama; benefit tidak boleh mengalahkan keamanan cashflow.','Moat','Acceptance dan transaction outcomes memperkaya proprietary recommendation dataset.'],
+      'qr-success':['Closed-loop payment & attribution','Product loop','Scan → AI recommendation → payment → balance update berjalan end-to-end.','Business event','Recommendation accepted dan transaction success memungkinkan partner attribution.','Investor proof','Prototype menunjukkan bagaimana user value dan revenue event terjadi pada momen yang sama.'],
+      'payment-advisor':['Core wedge','Recommendation stack','AI orchestration → promo data → eligibility → ranking → explainability → partner handoff.','Moat','Fresh promo database, merchant recognition, personalization, dan proprietary transaction dataset.','Target','Rekomendasi muncul <3 detik dan accepted recommendation ≥20%.'],
+      'payment-result':['Trust-preserving monetization','Principle','Sponsored campaign tidak mengubah ranking. User benefit adalah objective function utama.','Revenue','Affiliate / rev-share hanya diakui saat event click → transaction → success teratribusi.','Guardrail','Tampilkan alasan, eligibility, expiry, dan commercial disclosure.'],
+      assistant:['Daily engagement','Jobs','Payment Advisor, Can I Afford This, dan Spending Insight dalam satu chat-first interface.','Retention','Proactive nudge dan decision query membentuk alasan kembali tanpa membebani user dengan pencatatan manual.','Risk','Chat yang menarik tidak cukup jika data dan rekomendasi tidak akurat.'],
+      'transaction-success':['Revenue & data flywheel','Attribution','Click, transaction, dan success membuktikan tindakan atas rekomendasi.','Revenue streams','Affiliate keuangan, payment advisor rev-share, dan Transaction SEO setelah atribusi tervalidasi.','Flywheel','Lebih banyak transaksi → rekomendasi lebih akurat → lebih banyak trust → lebih banyak linked data.'],
+      affordability:['Expansion horizon','Persona','Impulsive Buyer membutuhkan visibilitas sebelum checkout, bukan penyesalan setelah transaksi.','Feature','Cashflow projection dan safe-to-spend mengubah data menjadi decision support.','Scope','Phase berikutnya setelah Payment Advisor terbukti.'],
+      insight:['Data utility','Role','Insight otomatis meningkatkan perceived value dari linked account dan membantu Financial Improver.','Retention','Insight harus actionable, bukan sekadar grafik.','Guardrail','Kategorisasi salah adalah trust-breaking event.'],
+      rewards:['Growth & retention','Referral','Reward cair setelah meaningful action, bukan sekadar signup.','Anti-fraud','Device, identity, attribution, dan first-use verification.','Regulatory note','Struktur poin, voucher, dan saldo perlu legal review agar tidak menjadi penerbitan e-money.'],
+      consent:['Data governance','User control','Purpose limitation, granular consent, audit log, dan revoke access.','Business value','Trust meningkatkan linking rate, data completeness, dan recommendation quality.','Compliance','Final design bergantung pada model bisnis, aggregator, dan legal review.']
+    };
+    return map[state.route] || map.splash;
+  }
+
+  function renderOverlay(){
+    const c=investorLensContent();
+    const overlay=document.createElement('div'); overlay.className='overlay'; overlay.innerHTML=`<div class="sheet"><div class="sheet-handle"></div><div class="row between"><div><div class="sheet-title">${c[0]}</div><div class="sheet-sub">Konteks produk dan bisnis untuk presentasi investor.</div></div><button class="icon-btn" data-action="close-overlay">${icon('i-close')}</button></div><div class="lens-grid"><div class="lens-item"><small>${c[1]}</small><b>${c[2]}</b><p>Desain prototype ini menunjukkan bagaimana hipotesis diterjemahkan menjadi alur produk.</p></div><div class="lens-item"><small>${c[3]}</small><b>${c[4]}</b><p>Perlu divalidasi menggunakan perilaku nyata, bukan hanya opini.</p></div><div class="lens-item"><small>${c[5]}</small><b>${c[6]}</b><p>Seluruh angka di prototype adalah target hipotesis, bukan performa aktual.</p></div></div></div>`;
+    phoneScreen.appendChild(overlay);
+  }
+
+  function updateStoryHighlight(){
+    const current = Object.keys(storyRoutes).find(k=>storyRoutes[k]===state.route) || state.activeStory;
+    storyList.querySelectorAll('.story-btn').forEach(b=>b.classList.toggle('active',b.dataset.story===current));
+  }
+
+  phoneScreen.addEventListener('click',e=>{
+    const routeBtn=e.target.closest('[data-route]');
+    if(routeBtn){go(routeBtn.dataset.route);return;}
+    const action=e.target.closest('[data-action]')?.dataset.action;
+    if(action==='back'){back();return;}
+    if(action==='send-otp'){
+      const name=document.getElementById('nameInput')?.value.trim()||'',phone=document.getElementById('phoneInput')?.value.replace(/\D/g,'')||'';
+      if(name.length<2){showToast('Masukkan nama lengkap terlebih dahulu.');document.getElementById('nameInput')?.focus();return;}
+      if(phone.length<9){showToast('Masukkan nomor WhatsApp yang valid.');document.getElementById('phoneInput')?.focus();return;}
+      const previousPhone=String(state.phone||'').replace(/\D/g,'');
+      if(previousPhone&&previousPhone!==phone){resetFinancialProfile();state.linkOrigin='onboarding';}
+      state.name=name;state.phone=phone;state.otpCooldown=42;persistState();go('otp');return;
+    }
+    if(action==='resend-otp'){if(state.otpCooldown>0)return;startOtpCountdown(true);showToast('Kode OTP baru telah dikirim.');return;}
+    if(action==='verify-otp'){const fields=[...phoneScreen.querySelectorAll('.otpbox')],digits=fields.map(field=>field.value).join('');if(digits.length!==6){showToast('Masukkan seluruh 6 digit kode OTP.');fields.find(field=>!field.value)?.focus();return;}go('pin');return;}
+    const pin=e.target.closest('[data-pin]')?.dataset.pin;
+    if(pin!==undefined){
+      if(pin==='⌫') state.pin=state.pin.slice(0,-1); else if(state.pin.length<6) state.pin+=pin;
+      if(state.pin.length===6){setTimeout(()=>go('trust'),250);} else render(); return;
+    }
+    const source=e.target.closest('[data-source]')?.dataset.source;
+    if(source){if(state.linked.includes(source)){showToast(source+' sudah terhubung.');return;}state.selectedSource=source;render();return;}
+    if(action==='add-account'){state.linkOrigin='management';selectFirstAvailableAccount();go('link-source');return;}
+    if(action==='start-link'){if(!state.selectedSource){showToast('Pilih satu akun atau wallet terlebih dahulu.');return;}if(state.linked.includes(state.selectedSource)){showToast(state.selectedSource+' sudah terhubung.');return;}go('link-progress');setTimeout(()=>{if(state.route==='link-progress'){const n=state.selectedSource;state.linked=[...new Set([...state.linked,n])];if(!state.wallets[n]){const template=state.accountCatalog[n]||{balance:250000,reserve:50000,monthlyLimit:200000,spentThisMonth:0,color:'#1769ff',soft:'#eaf2ff',letter:n[0],type:'Akun finansial',updated:'Baru saja'};state.wallets[n]={...template};state.walletOrder.push(n);state.totalMonthlyLimit+=(template.monthlyLimit||0);state.points+=200;if(!state.transactions.length)state.transactions=[{merchant:'GoFood',amount:85000,wallet:n,time:'Kemarin · 19:42',emoji:'🍜'},{merchant:'TransJakarta',amount:3500,wallet:n,time:'Kemarin · 08:10',emoji:'🚌'}];}state.lastLinkedSource=n;persistState();go(state.linkOrigin==='management'?'account-added':'first-value');}},1700);return;}
+    const scenario=e.target.closest('[data-scenario]')?.dataset.scenario;
+    if(scenario){setQrScenario(scenario);go('qr-analysis');setTimeout(()=>{if(state.route==='qr-analysis')go('qr-recommendation');},1550);return;}
+    if(action==='confirm-qr-payment'){go('qr-confirm');return;}
+    if(action==='pay-qr'){state.paymentPin='';go('qr-pin');return;}
+    const payPin=e.target.closest('[data-paypin]')?.dataset.paypin;
+    if(payPin!==undefined){
+      if(payPin==='⌫')state.paymentPin=state.paymentPin.slice(0,-1);else if(state.paymentPin.length<6)state.paymentPin+=payPin;
+      if(state.paymentPin.length===6)setTimeout(completeQrPayment,220);else render();
+      return;
+    }
+    if(action==='demo-pay-pin'){state.paymentPin='123456';render();setTimeout(completeQrPayment,250);return;}
+    const merchant=e.target.closest('[data-merchant]')?.dataset.merchant;
+    if(merchant){state.demoMerchant=merchant;render();return;}
+    const amount=e.target.closest('[data-amount]')?.dataset.amount;
+    if(amount){state.amount=Number(amount);render();return;}
+    if(action==='use-recommended-budget'){if(!hasAccounts()){state.linkOrigin='management';selectFirstAvailableAccount();go('link-source');return;}state.walletOrder.forEach(n=>{state.wallets[n].monthlyLimit=recommendedWalletBudget(n);state.wallets[n].reserve=recommendedReserve(n);});state.totalMonthlyLimit=recommendedTotalBudget();go('budget-setup');return;}
+    if(action==='auto-budget-wallets'){
+      const total=document.querySelector('[data-total-budget]');if(total)total.value=recommendedTotalBudget().toLocaleString('id-ID');
+      state.walletOrder.forEach(n=>{const limit=document.querySelector(`[data-budget-limit="${n}"]`),reserve=document.querySelector(`[data-budget-reserve="${n}"]`);if(limit)limit.value=recommendedWalletBudget(n).toLocaleString('id-ID');if(reserve)reserve.value=recommendedReserve(n).toLocaleString('id-ID');});
+      showToast('Rekomendasi diterapkan. Semua nominal masih bisa diedit.');return;
+    }
+    if(action==='save-budget'){ const totalInput=document.querySelector('[data-total-budget]'); if(totalInput) state.totalMonthlyLimit=Math.max(totalMonthlySpent(),Number(totalInput.value.replace(/\D/g,''))||0); document.querySelectorAll('[data-budget-limit]').forEach(input=>{const n=input.dataset.budgetLimit,w=state.wallets[n];w.monthlyLimit=Math.max(w.spentThisMonth||0,Number(input.value.replace(/\D/g,''))||0);}); document.querySelectorAll('[data-budget-reserve]').forEach(input=>{const n=input.dataset.budgetReserve,w=state.wallets[n];w.reserve=Math.min(w.balance,Number(input.value.replace(/\D/g,''))||0);}); state.monthlyBudgetEnabled=true;state.budgetSetupCompleted=true;persistState(); showToast('Budget bulanan berhasil disimpan.'); setTimeout(()=>go('budget-success'),450); return;}
+    if(action==='simulate-bca-over'){if(!state.wallets.BCA){showToast('Hubungkan BCA terlebih dahulu untuk simulasi ini.');return;}state.wallets.BCA.spentThisMonth=1120000;state.budgetSetupCompleted=true;persistState();showToast('Simulasi aktif: budget BCA terlampaui.'); setTimeout(()=>go('home'),500); return;}
+    if(action==='calculate-recommendation'){
+      const val=document.getElementById('amountInput')?.value.replace(/\D/g,''); if(val)state.amount=Number(val);
+      go('recommend-loading');setTimeout(()=>{if(state.route==='recommend-loading')go('payment-result');},1500);return;
+    }
+    if(action==='use-payment'){go('payment-handoff');return;}
+    if(action==='simulate-pay'){
+      if(!state.transactionDone){state.savings+=15000;state.points+=20;state.transactionDone=true;}
+      go('transaction-success');return;
+    }
+    if(action==='investor-lens'){state.overlay='investor';renderOverlay();return;}
+    if(action==='close-overlay'){e.target.closest('.overlay')?.remove();state.overlay=null;return;}
+    if(action==='send-chat')sendChat();
+    const quick=e.target.closest('[data-quick]')?.dataset.quick;
+    if(quick){document.getElementById('chatInput').value=quick;sendChat();return;}
+    const toggle=e.target.closest('[data-toggle]')?.dataset.toggle;
+    if(toggle){state.permissions[toggle]=!state.permissions[toggle];render();showToast(`Izin ${state.permissions[toggle]?'diaktifkan':'dinonaktifkan'}.`);return;}
+    if(action==='revoke-access'){state.permissions={balance:false,transactions:false,merchant:false,marketing:false};render();showToast('Seluruh akses GoPay telah dicabut.');return;}
+    if(action==='copy-code'){navigator.clipboard?.writeText('SAKU-TIM24');showToast('Kode referral berhasil disalin.');return;}
+    if(action==='custom-merchant'){state.demoMerchant='Tokopedia';state.amount=149000;render();showToast('Merchant simulasi Tokopedia dipilih.');return;}
+    const plainButton=e.target.closest('button');
+    if(plainButton){
+      if(plainButton.classList.contains('chip')){plainButton.parentElement.querySelectorAll('.chip').forEach(b=>b.classList.remove('active'));plainButton.classList.add('active');showToast(`${plainButton.textContent.trim()} dipilih.`);return;}
+      if(plainButton.textContent.includes('Redeem')){const matches=plainButton.closest('.voucher')?.querySelector('p')?.textContent.match(/[\d.]+/g)||[];const cost=Number((matches.at(-1)||'0').replace(/\./g,''));if(state.points<cost){showToast(`Poin belum cukup. Kamu punya ${state.points.toLocaleString('id-ID')} XP.`);}else{state.points-=cost;persistState();render();showToast('Voucher berhasil ditukarkan.');}return;}
+      if(plainButton.textContent.includes('Bagikan')){navigator.clipboard?.writeText('https://saku.app/ref/SAKU-TIM24');showToast('Link referral disalin dan siap dibagikan.');return;}
+      if(plainButton.textContent.includes('Keluar')){try{localStorage.removeItem('sakuAppV4')}catch(_){}showToast('Sesi berhasil diakhiri.');setTimeout(()=>go('splash'),350);return;}
+      showToast('Pengaturan simulasi berhasil dibuka.');
+    }
+  });
+
+  const fillOtp = (start, value) => {
+    const fields=[...phoneScreen.querySelectorAll('.otpbox')];
+    const digits=String(value).replace(/\D/g,'');
+    if(!fields.length||!digits)return;
+    digits.slice(0,fields.length-start).split('').forEach((digit,offset)=>{fields[start+offset].value=digit;});
+    const next=Math.min(start+digits.length,fields.length-1);
+    fields[next].focus();
+  };
+
+  phoneScreen.addEventListener('input',e=>{
+    const moneyField=e.target.closest('[data-money-input]');
+    if(moneyField){const digits=moneyField.value.replace(/\D/g,'').replace(/^0+(?=\d)/,'').slice(0,15);moneyField.value=digits?Number(digits).toLocaleString('id-ID'):'';return;}
+    const field=e.target.closest('.otpbox');
+    if(!field)return;
+    const index=Number(field.dataset.index);
+    const digits=field.value.replace(/\D/g,'');
+    field.value='';
+    fillOtp(index,digits);
+  });
+
+  phoneScreen.addEventListener('keydown',e=>{
+    const field=e.target.closest('.otpbox');
+    if(!field)return;
+    const fields=[...phoneScreen.querySelectorAll('.otpbox')];
+    const index=Number(field.dataset.index);
+    if(e.key==='Backspace'){
+      e.preventDefault();
+      if(field.value) field.value='';
+      else if(index>0){fields[index-1].value='';fields[index-1].focus();}
+    } else if(e.key==='ArrowLeft'&&index>0) fields[index-1].focus();
+    else if(e.key==='ArrowRight'&&index<fields.length-1) fields[index+1].focus();
+  });
+
+  phoneScreen.addEventListener('paste',e=>{
+    const field=e.target.closest('.otpbox');
+    if(!field)return;
+    e.preventDefault();
+    fillOtp(Number(field.dataset.index),e.clipboardData.getData('text'));
+  });
+
+  bottomNav.addEventListener('click',e=>{const b=e.target.closest('[data-route]');if(b)go(b.dataset.route);});
+  storyList.addEventListener('click',e=>{const b=e.target.closest('[data-story]');if(!b)return;state.activeStory=b.dataset.story;go(storyRoutes[b.dataset.story]);});
+  document.getElementById('resetDemo').addEventListener('click',()=>{Object.assign(state,{route:'splash',history:[],name:'Timothy',phone:'812 3456 7890',demoMerchant:'GoFood',amount:85000,selectedSource:'ShopeePay',linkOrigin:'onboarding',lastLinkedSource:null,linked:['GoPay','OVO','DANA','BCA'],wallets:{GoPay:{balance:235000,reserve:50000,monthlyLimit:400000,spentThisMonth:285000,color:'#10a46a',soft:'#e6f8ef',letter:'G',type:'E-wallet',updated:'Baru saja'},OVO:{balance:72500,reserve:20000,monthlyLimit:250000,spentThisMonth:98000,color:'#5c37a5',soft:'#f0eaff',letter:'O',type:'E-wallet',updated:'1 menit lalu'},DANA:{balance:180000,reserve:40000,monthlyLimit:300000,spentThisMonth:145000,color:'#1686ea',soft:'#eaf2ff',letter:'D',type:'E-wallet',updated:'2 menit lalu'},BCA:{balance:8125000,reserve:6500000,monthlyLimit:1000000,spentThisMonth:920000,color:'#1559b5',soft:'#eaf2ff',letter:'B',type:'Rekening bank',updated:'2 menit lalu'}},walletOrder:['GoPay','OVO','DANA','BCA'],qr:{merchant:'Kopi Kenangan',category:'F&B',amount:68000,emoji:'☕',scenario:'coffee'},paymentPin:'',lastPayment:null,transactions:[{merchant:'GoFood',amount:85000,wallet:'GoPay',time:'Hari ini · 11:42',emoji:'🍜'},{merchant:'TransJakarta',amount:3500,wallet:'DANA',time:'Hari ini · 08:10',emoji:'🚌'}],savings:184500,points:1240,pin:'',messages:[{from:'ai',text:'Halo Timothy 👋 Sebelum kamu bayar atau checkout, tanya aku dulu. Aku akan cari metode paling untung dan cek dampaknya ke keuanganmu.'}],permissions:{balance:true,transactions:true,merchant:true,marketing:false},activeStory:null,overlay:null,transactionDone:false,monthlyBudgetEnabled:true,totalMonthlyLimit:1950000,budgetWarningThreshold:80,budgetSetupCompleted:false});try{localStorage.removeItem('sakuBudgetV3')}catch(_){}render();});
+  document.getElementById('resetDemo').addEventListener('click',()=>{try{localStorage.removeItem('sakuAppV4')}catch(_){}});
+  document.getElementById('openApp').addEventListener('click',()=>go('home'));
+
+  function sendChat(){
+    const input=document.getElementById('chatInput'); if(!input||!input.value.trim())return;
+    const text=input.value.trim(); state.messages.push({from:'user',text});
+    let reply='Aku memahami pertanyaanmu. Aku akan menggunakan data keuangan yang kamu izinkan dan menjelaskan alasan di balik setiap rekomendasi.';
+    const lower=text.toLowerCase();
+    if(lower.includes('bayar')||lower.includes('gopay')||lower.includes('promo')) reply='Untuk membandingkan metode pembayaran, aku perlu merchant dan nominal transaksi. Aku bisa langsung membuka Payment Advisor untukmu.';
+    else if(lower.includes('mampu')||lower.includes('beli')||lower.includes('laptop')) reply='Aku bisa mengecek kemampuan beli berdasarkan saldo, cashflow 30 hari, tagihan tetap, dan dana aman minimum.';
+    else if(lower.includes('boros')||lower.includes('pengeluaran')) reply='Pengeluaranmu naik 8% bulan ini. Kategori terbesar adalah makan & food delivery, yang sudah memakai 78% budget.';
+    else if(lower.includes('budget')||lower.includes('batas')||lower.includes('bca')) reply=hasAccounts()?`Budget totalmu tersisa ${money(overallBudgetRemaining())}. Aku akan memprioritaskan akun yang masih berada dalam batas aman.`:'Belum ada akun yang terhubung. Hubungkan satu rekening atau e-wallet agar aku bisa menyusun budget yang realistis.';
+    state.messages.push({from:'ai',text:reply});render();
+    setTimeout(()=>{
+      if((lower.includes('bayar')||lower.includes('promo')) && state.route==='assistant') showToast('Ketuk “Bayar pakai apa?” untuk membuka Payment Advisor.');
+    },150);
+  }
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){const o=phoneScreen.querySelector('.overlay');if(o){o.remove();state.overlay=null;}else back();}
+    if(e.key==='ArrowRight' && e.altKey){const keys=Object.keys(storyRoutes);let i=Math.max(0,keys.indexOf(state.activeStory));i=Math.min(keys.length-1,i+1);state.activeStory=keys[i];go(storyRoutes[keys[i]]);}
+    if(e.key==='ArrowLeft' && e.altKey){const keys=Object.keys(storyRoutes);let i=Math.max(0,keys.indexOf(state.activeStory));i=Math.max(0,i-1);state.activeStory=keys[i];go(storyRoutes[keys[i]]);}
+  });
+
+  try{const saved=JSON.parse(localStorage.getItem('sakuAppV4')||'null');if(saved)Object.assign(state,saved);}catch(_){}
+  const preview=new URLSearchParams(location.search);if(preview.get('screen'))state.route=preview.get('screen');if(preview.get('demo')==='bca-over'&&state.wallets.BCA)state.wallets.BCA.spentThisMonth=1120000;
+  render();
+})();
+</script>
+</body>
+</html>
